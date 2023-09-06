@@ -12,8 +12,8 @@ n = 100
 
 # Make data set.
 x = np.linspace(-3, 3, n).reshape(-1, 1)
-y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2)+ np.random.normal(0, 0.1, x.shape)
-
+y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2) + np.random.normal(0, 0.1, x.shape)
+"""
 poly5 = PolynomialFeatures(degree=5)
 X = poly5.fit_transform(x)
 
@@ -28,11 +28,12 @@ y_tilde_test = clf.predict(X_test)
 
 MSE_train = mean_squared_error(y_train, y_tilde_train)
 MSE_test = mean_squared_error(y_test, y_tilde_test)
-
+"""
 ## c
-MSE_train_arr = np.zeros(14)
-MSE_test_arr = np.zeros(14)
-degrees = np.linspace(2, 15, 14, dtype=int)
+deg_num = 15
+MSE_train_arr = np.zeros(deg_num-1)
+MSE_test_arr = np.zeros(deg_num-1)
+degrees = np.linspace(2, deg_num, deg_num-1, dtype=int)
 
 for deg in degrees:
     poly15 = PolynomialFeatures(degree=deg)
