@@ -1,3 +1,2 @@
-# FYS-STK3155
-
-My (Brage's) repository for the projects and exercises in FYS-STK3155
+# FYS-STK4155
+Repository for the projects in FYS-STK4155 - Applied Data Analysis and Machine Learning
