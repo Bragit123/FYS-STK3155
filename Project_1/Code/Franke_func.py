@@ -11,14 +11,14 @@ from sklearn.pipeline import make_pipeline
 
 np.random.seed()
 n = 5 
-poly_degree = 2
+poly_degree = 5
 
 # Make data set. meshgrid is only for plotting 
 #x = np.arange(2, 3, 0.01)
 #y = np.arange(2, 3, 0.01)
 
-x = np.random.rand(100) #need random numbers between 0 and 1, or else you get singular matrix
-y = np.random.rand(100)
+x = np.random.rand(1000) #need random numbers between 0 and 1, or else you get singular matrix
+y = np.random.rand(1000)
 
 
 
@@ -36,13 +36,13 @@ z = FrankeFunction(x,y) #Franke function takes in only pairs of (x,y) values, (x
                         # If i would define z(X,Y), I.e. X, Y from meshgrid, it would pair x_1 with every y, and so on and produce 3 times more data
 
 
-feature_matrix = np.zeros((len(x), (poly_degree + 1)**2 - 1) ) #creating empty feature matrix
+#feature_matrix = np.zeros((len(x), (poly_degree + 1)**2 - 1) ) #creating empty feature matrix
 
 
 poly_degree_list = []
 feature_matrix_list = []
 
-for p in range(0,5):
+for p in range(0,poly_degree):
 
     feature_matrix = np.zeros((len(x), (p + 2)**2 - 1) ) #creating empty feature matrix
     feature_matrix_list.append(feature_matrix)
@@ -57,7 +57,7 @@ for p in range(0,5):
 
             #print(feature_matrix_list[p])
             if i != 0 or j !=0:                    
-                feature_matrix_list[p][:,k] = x**i * y**j
+                feature_matrix_list[p][:,k] = (x - np.mean(x))**i * (y - np.mean(x))**j #unsure if it is correct to subtract mean value here
                 k += 1
 
 #X_train_list = []
@@ -70,16 +70,38 @@ MSE_ols_test_list = []
 R2_ols_train_list = []
 R2_ols_test_list = []
 
-for i in range(len(feature_matrix_list)):
-    X_train, X_test, z_train, z_test = train_test_split(feature_matrix_list[i], z) #splitting my data into test and train data
-    beta_ols = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train #calculating beta
-    z_predict_train = X_train @ beta_ols
-    z_predict_test = X_test @ beta_ols
+MSE_ridge_train_list = []
+MSE_ridge_test_list = []
+R2_ridge_train_list = []
+R2_ridge_test_list = []
 
-    MSE_ols_train_list.append(mean_squared_error(z_train,z_predict_train))
-    MSE_ols_test_list.append(mean_squared_error(z_test,z_predict_test))
-    R2_ols_train_list.append(r2_score(z_train,z_predict_train))
-    R2_ols_test_list.append(r2_score(z_test,z_predict_test))
+Identity = []
+
+for i in range(len(feature_matrix_list)):
+    X_train, X_test, z_train, z_test = train_test_split(feature_matrix_list[i], z) #splitting my data into test and train data OLS regression
+    beta_ols = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train #calculating beta
+    z_predict_train_ols = X_train @ beta_ols
+    z_predict_test_ols = X_test @ beta_ols
+
+    MSE_ols_train_list.append(mean_squared_error(z_train,z_predict_train_ols))
+    MSE_ols_test_list.append(mean_squared_error(z_test,z_predict_test_ols))
+    R2_ols_train_list.append(r2_score(z_train,z_predict_train_ols))
+    R2_ols_test_list.append(r2_score(z_test,z_predict_test_ols))
+
+    lambdaa = [0.0001, 0.001, 0.01, 0.1, 1 ] 
+    X_train_ridge, X_test_ridge, z_train_ridge, z_test_ridge = train_test_split(feature_matrix_list[i], z) #splitting my data into test and train data for Ridge regression
+    Identity.append(np.eye((i + 2)**2 - 1))
+    beta_ridge = np.linalg.inv(X_train_ridge.T @ X_train_ridge + lambdaa[i] * Identity[i]) @ X_train_ridge.T @ z_train_ridge
+    
+    z_predict_train_ridge = X_train @ beta_ridge
+    z_predict_test_ridge = X_test @ beta_ridge
+
+    MSE_ridge_train_list.append(mean_squared_error(z_train,z_predict_train_ridge))
+    MSE_ridge_test_list.append(mean_squared_error(z_test,z_predict_test_ridge))
+    R2_ridge_train_list.append(r2_score(z_train,z_predict_train_ridge))
+    R2_ridge_test_list.append(r2_score(z_test,z_predict_test_ridge))
+
+
 
 
 fig, (ax1,ax2) = plt.subplots(1,2)
@@ -101,10 +123,76 @@ ax2.legend()
 ax2.set_title('R2_ols vs degree')
 plt.legend
 
-plt.savefig('MSE_and_R2_vs_Degree_OLS')
+fig2, (ax1,ax2) = plt.subplots(1,2)
+
+ax1.plot(poly_degree_list,MSE_ridge_train_list, label = "MSE Train")
+ax1.legend()
+ax1.plot(poly_degree_list,MSE_ridge_test_list, label = "MSE Test")
+ax1.set_xlabel('degree ')
+ax1.set_ylabel(' Error')
+ax1.legend()
+ax1.set_title('MSE_ridge vs degree')
+
+ax2.plot(poly_degree_list,R2_ridge_train_list, label = "R2 Train")
+ax2.legend()
+ax2.plot(poly_degree_list,R2_ridge_test_list, label = "R2 Test")
+ax2.set_xlabel('degree ')
+ax2.set_ylabel(' R2')
+ax2.legend()
+ax2.set_title('R2_ridge vs degree')
+plt.legend
+
+fig2.savefig('MSE_and_R2_vs_Degree_RIDGE')
+
+
+#plt.savefig('MSE_and_R2_vs_Degree_OLS')
 
 
 plt.show()
+"""
+
+#PART B ADDING RIDGE REGRESSION
+
+lambdaa = [0.0001, 0.001, 0.01, 0.1, 1 ]
+Identity = np.eye(6)
+Identity2 = np.eye(11)
+Identity3 = np.eye(16)
+MSE_test_ridge = []
+MSE_train_ridge = []
+difference = []
+
+MSE_ridge_10_test = []
+MSE_ridge_10_train = []
+MSE_ridge_15_test = []
+MSE_ridge_15_train = []
+
+for i in lambdaa:
+    beta_ridge = np.linalg.inv(X_new_train.T @ X_new_train + i * Identity) @ X_new_train.T @ y_train
+    beta_ridge_10 = np.linalg.inv(X_10_train.T @ X_10_train + i * Identity2) @ X_10_train.T @ y_train
+    beta_ridge_15 = np.linalg.inv(X_15_train.T @ X_15_train + i * Identity3) @ X_15_train.T @ y_train
+
+    y_predicted_test_ridge = X_new_test @ beta_ridge
+    y_predicted_train_ridge = X_new_train @ beta_ridge
+
+    y_predicted10_test_ridge = X_10_test @ beta_ridge_10
+    y_predicted10_train_ridge = X_10_train @ beta_ridge_10
+
+    y_predicted15_test_ridge = X_15_test @ beta_ridge_15
+    y_predicted15_train_ridge = X_15_train @ beta_ridge_15
+
+    MSE_test_ridge.append(mean_squared_error(y_test,y_predicted_test_ridge))
+    MSE_train_ridge.append(mean_squared_error(y_train,y_predicted_train_ridge))
+
+    MSE_ridge_10_test.append(mean_squared_error(y_test,y_predicted10_test_ridge))
+    MSE_ridge_10_train.append(mean_squared_error(y_train,y_predicted10_train_ridge))
+
+    MSE_ridge_15_test.append(mean_squared_error(y_test,y_predicted15_test_ridge))
+    MSE_ridge_15_train.append(mean_squared_error(y_train,y_predicted15_train_ridge))
+
+
+
+
+
 
 
     #X_train_list.append(X_train)
@@ -119,7 +207,6 @@ plt.show()
 
 #print(f"outside for loop:",X_train)
 
-"""
 
 
     #columns_to_remove = [0, -i]
