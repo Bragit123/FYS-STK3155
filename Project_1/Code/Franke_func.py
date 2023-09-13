@@ -20,6 +20,9 @@ poly_degree = 5
 x = np.random.rand(1000) #need random numbers between 0 and 1, or else you get singular matrix
 y = np.random.rand(1000)
 
+#Code below might be more optimal:
+#x = np.sort(np.random.uniform(0, 1, N))
+#y = np.sort(np.random.uniform(0, 1, N))
 
 
 X, Y = np.meshgrid(x,y) #creating meashgrid. Note: When doing regression we do not want to feed our Franke function with X and Y, I could use X and Y if i ravel() 
@@ -75,6 +78,11 @@ MSE_ridge_test_list = []
 R2_ridge_train_list = []
 R2_ridge_test_list = []
 
+MSE_lasso_train_list = []
+MSE_lasso_test_list = []
+R2_lasso_train_list = []
+R2_lasso_test_list = []
+
 Identity = []
 
 for i in range(len(feature_matrix_list)):
@@ -100,6 +108,24 @@ for i in range(len(feature_matrix_list)):
     MSE_ridge_test_list.append(mean_squared_error(z_test,z_predict_test_ridge))
     R2_ridge_train_list.append(r2_score(z_train,z_predict_train_ridge))
     R2_ridge_test_list.append(r2_score(z_test,z_predict_test_ridge))
+
+    X_train_lasso, X_test_lasso, z_train_lasso, z_test_lasso = train_test_split(feature_matrix_list[i], z) #splitting my data into test and train data for Lasso regression
+
+    model = Lasso(alpha=0.05)
+    model.fit(X_train_lasso,z_train_lasso)
+    z_predict_train_lasso = model.predict(X_train_lasso)
+    z_predict_test_lasso = model.predict(X_test_lasso)
+    
+
+    MSE_lasso_train_list.append(mean_squared_error(z_train_lasso,z_predict_train_lasso))
+    MSE_lasso_test_list.append(mean_squared_error(z_test_lasso,z_predict_test_lasso))
+    R2_lasso_train_list.append(r2_score(z_train_lasso,z_predict_train_lasso))
+    R2_lasso_test_list.append(r2_score(z_test_lasso,z_predict_test_lasso))
+
+
+
+
+    
 
 
 
@@ -142,7 +168,28 @@ ax2.legend()
 ax2.set_title('R2_ridge vs degree')
 plt.legend
 
-fig2.savefig('MSE_and_R2_vs_Degree_RIDGE')
+fig3, (ax1,ax2) = plt.subplots(1,2)
+
+ax1.plot(poly_degree_list,MSE_lasso_train_list, label = "MSE Train")
+ax1.legend()
+ax1.plot(poly_degree_list,MSE_lasso_test_list, label = "MSE Test")
+ax1.set_xlabel('degree ')
+ax1.set_ylabel(' Error')
+ax1.legend()
+ax1.set_title('MSE_lasso vs degree')
+
+ax2.plot(poly_degree_list,R2_lasso_train_list, label = "R2 Train")
+ax2.legend()
+ax2.plot(poly_degree_list,R2_lasso_test_list, label = "R2 Test")
+ax2.set_xlabel('degree ')
+ax2.set_ylabel(' R2')
+ax2.legend()
+ax2.set_title('R2_lasso vs degree')
+plt.legend
+
+fig3.savefig('MSE_and_R2_vs_Degree_LASSO')
+
+#fig2.savefig('MSE_and_R2_vs_Degree_RIDGE')
 
 
 #plt.savefig('MSE_and_R2_vs_Degree_OLS')
