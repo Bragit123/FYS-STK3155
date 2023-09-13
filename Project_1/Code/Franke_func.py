@@ -189,10 +189,10 @@ plt.legend
 
 fig3.savefig('MSE_and_R2_vs_Degree_LASSO')
 
-#fig2.savefig('MSE_and_R2_vs_Degree_RIDGE')
+fig2.savefig('MSE_and_R2_vs_Degree_RIDGE')
 
 
-#plt.savefig('MSE_and_R2_vs_Degree_OLS')
+fig.savefig('MSE_and_R2_vs_Degree_OLS')
 
 
 plt.show()
