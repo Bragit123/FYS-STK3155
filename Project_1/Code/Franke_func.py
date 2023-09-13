@@ -11,14 +11,14 @@ from sklearn.pipeline import make_pipeline
 
 np.random.seed()
 n = 5 
-poly_degree = 1
+poly_degree = 2
 
 # Make data set. meshgrid is only for plotting 
 #x = np.arange(2, 3, 0.01)
 #y = np.arange(2, 3, 0.01)
 
-x = np.random.rand(5) #need random numbers between 0 and 1, or else you get singular matrix
-y = np.random.rand(5)
+x = np.random.rand(100) #need random numbers between 0 and 1, or else you get singular matrix
+y = np.random.rand(100)
 
 
 
@@ -38,23 +38,161 @@ z = FrankeFunction(x,y) #Franke function takes in only pairs of (x,y) values, (x
 
 feature_matrix = np.zeros((len(x), (poly_degree + 1)**2 - 1) ) #creating empty feature matrix
 
-k = 0
-for i in range(poly_degree + 1):     #nested loop, to get all combinations of x and y
-    for j in range(poly_degree + 1): 
-        if i != 0 or j !=0:                    
-            feature_matrix[:,k] = x**i * y**j
-            k += 1
+
+poly_degree_list = []
+feature_matrix_list = []
+
+for p in range(0,5):
+
+    feature_matrix = np.zeros((len(x), (p + 2)**2 - 1) ) #creating empty feature matrix
+    feature_matrix_list.append(feature_matrix)
+    #print(f"feature matrix number: {p+1} = {feature_matrix_list[p]}")
+    poly_degree_list.append(p + 1)
+    k = 0
+
+    for i in range(p + 2):     #nested loop, to get all combinations of x and y
+        for j in range(p + 2):
+            #feature_matrix = np.zeros((len(x), (poly_degree + 1)**2 - 1) ) #creating empty feature matrix
+            
+
+            #print(feature_matrix_list[p])
+            if i != 0 or j !=0:                    
+                feature_matrix_list[p][:,k] = x**i * y**j
+                k += 1
+
+#X_train_list = []
+#X_test_list = []
+#z_train_list = []
+#z_test_list = []
+
+MSE_ols_train_list = []
+MSE_ols_test_list = []
+R2_ols_train_list = []
+R2_ols_test_list = []
+
+for i in range(len(feature_matrix_list)):
+    X_train, X_test, z_train, z_test = train_test_split(feature_matrix_list[i], z) #splitting my data into test and train data
+    beta_ols = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train #calculating beta
+    z_predict_train = X_train @ beta_ols
+    z_predict_test = X_test @ beta_ols
+
+    MSE_ols_train_list.append(mean_squared_error(z_train,z_predict_train))
+    MSE_ols_test_list.append(mean_squared_error(z_test,z_predict_test))
+    R2_ols_train_list.append(r2_score(z_train,z_predict_train))
+    R2_ols_test_list.append(r2_score(z_test,z_predict_test))
+
+
+fig, (ax1,ax2) = plt.subplots(1,2)
+
+ax1.plot(poly_degree_list,MSE_ols_train_list, label = "MSE Train")
+ax1.legend()
+ax1.plot(poly_degree_list,MSE_ols_test_list, label = "MSE Test")
+ax1.set_xlabel('degree ')
+ax1.set_ylabel(' Error')
+ax1.legend()
+ax1.set_title('MSE_ols vs degree')
+
+ax2.plot(poly_degree_list,R2_ols_train_list, label = "R2 Train")
+ax2.legend()
+ax2.plot(poly_degree_list,R2_ols_test_list, label = "R2 Test")
+ax2.set_xlabel('degree ')
+ax2.set_ylabel(' R2')
+ax2.legend()
+ax2.set_title('R2_ols vs degree')
+plt.legend
+
+plt.savefig('MSE_and_R2_vs_Degree_OLS')
+
+
+plt.show()
+
+
+    #X_train_list.append(X_train)
+    #X_test_list.append(X_test)
+    #z_train_list.append(z_train)
+    #z_test_list.append(z_train)
+    
+    #print(f"inside for loop:",X_train)
+
+
+#print(X_train_list[1])
+
+#print(f"outside for loop:",X_train)
+
+"""
+
+
+    #columns_to_remove = [0, -i]
+
+    # Create a new matrix with columns removed
+    #new_matrix = np.delete(matrix, columns_to_remove, axis=1)
+
+    feature_matrix_list.append(feature_matrix.copy())
+    #print(f"Feature matrix number {i} is : {feature_matrix_list[i]}")
+
+#print(feature_matrix_list[0])
+#print(feature_matrix_list[1])
+
+print("feature matrix:",feature_matrix)
+
+
+
+non_zero_feature_matrix_list = []
+
+
+for i in range(len(feature_matrix_list)):
+    raveled_matrix = feature_matrix_list[i].ravel()
+    non_zero_elements = raveled_matrix[raveled_matrix != 0]
+    new_shape = feature_matrix_list[i].shape
+    reshaped_matrix = non_zero_elements.reshape(new_shape)
+
+    non_zero_feature_matrix_list.append(reshaped_matrix)
+
+
+
+
+    #non_zero_feature_matrix_list.append(reshaped_matrix)
+
+
+#for i in range(len(feature_matrix_list)):
+#    print(f"Shape of poly degree{i}: {non_zero_feature_matrix_list[i].shape}")
+
+
+print(non_zero_feature_matrix_list[0])
+print(feature_matrix_list[0])
+    
+
+filtered_A = []
+for i in feature_matrix_list:
+    non_zero_rows_mask = np.any(i != 0, axis=1)
+    #filtered_A = A[non_zero_rows_mask]
+    non_zero_feature_matrix = i[non_zero_rows_mask]
+    #print(non_zero_feature_matrix.shape)
+    #filtered_A.append(non_zero_feature_matrix)
+
+#print(filtered_A)
+
+# Use the mask to extract rows that are not all zeros
+#filtered_A = A[non_zero_rows_mask]
 
 X_train, X_test, z_train, z_test = train_test_split(feature_matrix, z) #splitting my data into test and train data
 
 beta_ols = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train #calculating beta
 
-print(beta_ols)
+
+#predicted output values from the training set. This is Z_tilde, which is the predicted outcome of our model 
+z_predict_train = X_train @ beta_ols
+z_predict_test = X_test @ beta_ols
+
+MSE_ols_train = mean_squared_error(z_train,z_predict_train)
+MSE_ols_test = mean_squared_error(z_test,z_predict_test)
+
+#R2_ols_train = r2_score(z_train,z_predict_train)
+#R2_ols_test = r2_score(z_test,z_predict_test)
 
 
 
 
-"""
 
 for i in range(poly_degree): 
     Xy_nested[i] = x**(i+1) * y #filling my empty arrays with elements of (x)^i times y
