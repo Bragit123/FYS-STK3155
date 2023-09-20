@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sklearn
 import sklearn.model_selection
 from sklearn import linear_model
-
+import pandas as pd
 #This part makes the Franke function, just copied from the tasks
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -60,12 +60,9 @@ def OLSfit(x,y,z,deg):
                 X[:,k] = x**i*y**j
                 k+=1
 
-    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X, z, test_size= 0.2, random_state=0)
-    z_train_mean = np.mean(z_train)
-    X_train_mean = np.mean(X_train,axis=0)
-    X_train = X_train - X_train_mean
-    z_train = z_train - z_train_mean
-    z_test = z_test - z_train_mean
+    X_pandas = pd.DataFrame(X[:,:])
+    X_pandas = X_pandas - X_pandas.mean()
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
     beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
     ztilde = X_train @ beta
     zpredict = X_test @ beta
@@ -126,12 +123,10 @@ def ridgefit(x,y,z,deg,lambda_val):
                 X[:,k] = x**i*y**j
                 k+=1
 
-    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X, z, test_size= 0.2, random_state=0)
-    z_train_mean = np.mean(z_train)
-    X_train_mean = np.mean(X_train,axis=0)
-    X_train = X_train - X_train_mean
-    z_train = z_train - z_train_mean
-    z_test = z_test - z_train_mean
+    X_pandas = pd.DataFrame(X[:,:])
+    X_pandas = X_pandas - X_pandas.mean()
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
+
     beta = (np.linalg.inv(np.add((X_train.T @ X_train), lambda_val*np.identity(int((deg+1)**2)-1)))) @ X_train.T @ z_train
     ztilde = X_train @ beta
     zpredict = X_test @ beta
@@ -178,13 +173,9 @@ def Lassofit(x,y,z,deg,lambda_val):
                 X[:,k] = x**i*y**j
                 k+=1
 
-
-    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X, z, test_size= 0.2, random_state=0)
-    z_train_mean = np.mean(z_train)
-    X_train_mean = np.mean(X_train,axis=0)
-    X_train = X_train - X_train_mean
-    z_train = z_train - z_train_mean
-    z_test = z_test - z_train_mean
+    X_pandas = pd.DataFrame(X[:,:])
+    X_pandas = X_pandas - X_pandas.mean()
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
 
     clf = linear_model.Lasso(lambda_val,fit_intercept=False)
     clf.fit(X_train,z_train)
@@ -218,3 +209,104 @@ plt.xlabel("log10lambda")
 plt.ylabel("R2-score")
 plt.legend()
 plt.show()
+
+
+#code taken from lecture notes (5.4 The bias-variance trade-off)
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.utils import resample
+
+np.random.seed(2018)
+
+n = 40
+n_boostraps = 100
+datapoints = 10000
+maxdegree = 5
+
+bias = np.zeros(maxdegree)
+variance = np.zeros(maxdegree)
+MSE_array = np.zeros(maxdegree)
+degs=np.linspace(1,maxdegree,maxdegree)
+
+def bootstrap(data, datapoints):
+    t = np.zeros(datapoints)
+    n = len(data)
+    # non-parametric bootstrap
+    for i in range(datapoints):
+        t[i] = np.mean(data[np.random.randint(0,n,n)])
+
+    return t, np.std(data), np.std(t) #t, bias, variance
+
+for deg in range(1,maxdegree+1):
+    X = np.zeros((len(x), int((deg+1)**2)-1)) #Design matrix
+    k = 0
+    for i in range(0, int(deg+1)):
+        for j in range(0, int(deg+1)):
+            if i==0 and j==0:
+                a ="Dont add anything" #We dont add the intercept
+            else:
+                X[:,k] = x**i*y**j
+                k+=1
+
+    X_pandas = pd.DataFrame(X[:,:])
+    X_pandas = X_pandas - X_pandas.mean()
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
+    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    ztilde = X_train @ beta
+    zpredict = X_test @ beta
+    MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
+    MSE_array[deg-1] = sklearn.metrics.mean_squared_error(z_test,zpredict)
+
+    t, bias[deg-1], variance[deg-1] = bootstrap(z_test, datapoints)
+
+plt.plot(degs,bias,label="bias")
+plt.plot(degs,variance,label="variance")
+plt.plot(degs,MSE_array, label="MSE")
+plt.xlabel("Degree")
+plt.legend()
+plt.show()
+
+
+
+"""
+error = np.zeros(maxdegree)
+bias = np.zeros(maxdegree)
+variance = np.zeros(maxdegree)
+polydegree = np.zeros(maxdegree)
+
+
+for degree in range(maxdegree):
+    X = np.zeros((len(x), int((degree+1)**2)-1)) #Design matrix
+    k = 0
+    for i in range(0, int(degree+1)):
+        for j in range(0, int(degree+1)):
+            if i==0 and j==0:
+                a ="Dont add anything" #We dont add the intercept
+            else:
+                X[:,k] = x**i*y**j
+                k+=1
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X, z, test_size= 0.2, random_state=0)
+    z_train_mean = np.mean(z_train)
+    X_train_mean = np.mean(X_train,axis=0)
+    X_train = X_train - X_train_mean
+    z_train = z_train - z_train_mean
+    z_test = z_test - z_train_mean
+    z_pred = np.empty((z_test.shape[0], n_boostraps))
+    for i in range(n_boostraps):
+        X_, z_ = resample(X_train, z_train)
+        beta = np.linalg.inv(X_.T @ X_) @ X_.T @ z_
+        z_pred[:, i] = X_test @ beta
+
+    polydegree[degree] = degree
+    print(np.shape(z_test),np.shape(z_pred))
+    error[degree] = np.mean( np.mean((z_test - z_pred)**2, axis=1, keepdims=True) )
+    bias[degree] = np.mean( (z_test - np.mean(z_pred, axis=1, keepdims=True))**2 )
+    variance[degree] = np.mean( np.var(z_pred, axis=1, keepdims=True) )
+plt.plot(polydegree, error, label='Error')
+plt.plot(polydegree, bias, label='bias')
+plt.plot(polydegree, variance, label='Variance')
+plt.legend()
+plt.show()
+"""
