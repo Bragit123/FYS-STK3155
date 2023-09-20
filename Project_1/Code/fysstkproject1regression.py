@@ -4,15 +4,15 @@ import sklearn
 import sklearn.model_selection
 from sklearn import linear_model
 import pandas as pd
-#This part makes the Franke function, just copied from the tasks
 
+## This part makes the Franke function, just copied from the tasks
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from random import random, seed
 
 fig = plt.figure()
-ax = fig.gca(projection='3d')
+ax = fig.add_subplot(projection='3d')
 
 # Make data.
 x = np.arange(0, 1, 0.05)
@@ -44,11 +44,12 @@ fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
 
-#OLS-function, structured close to the code in the lecture notes, with some changes for our case
+## OLS-function, structured close to the code in the lecture notes, with some changes for our case
 x = np.sort(np.random.rand(100))
 y = np.sort(np.random.rand(100))
 z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
+
 def OLSfit(x,y,z,deg):
     X = np.zeros((len(x), int((deg+1)**2)-1)) #Design matrix
     k = 0
