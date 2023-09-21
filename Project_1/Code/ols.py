@@ -5,21 +5,14 @@ import sklearn.model_selection
 from sklearn import linear_model
 import pandas as pd
 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+
 from random import random, seed
 
-## Making the Franke function. This part is largely copied from the projection description
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-
-# Generate data.
-x = np.arange(0, 1, 0.05)
-y = np.arange(0, 1, 0.05)
-x, y = np.meshgrid(x,y)
-
-def FrankeFunction(x, y):
+def FrankeFunction(x: float, y: float) -> float:
     """ Calculates the Franke function at a point (x,y) """
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
@@ -27,55 +20,75 @@ def FrankeFunction(x, y):
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-z = FrankeFunction(x, y) # Calculate the Franke function for our dataset.
+def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
+    """ Calculates a model fitting our data using ordinary least squares.
+    
+    ## Parameters
+        x (ndarray): x-values of data points.
+        y (ndarray): y-values of data points.
+        z (ndarray): z-values of data points.
+        deg (int): Degree of polynomial fit.
+    
+    ## Returns
+        MSE_train (float): Mean square error of model on training data.
+        MSE_test (float): Mean square error of model on test data.
+        R2_train (float): R2 value of model on training data.
+        R2_test (float): R2 value of model on test data.
+        beta (ndarray): Coefficients of model.
+    
+    """
+    ## Create feature matrix 
+    xy_dic = {
+        "x": x,
+        "y": y
+    }
+    xy = pd.DataFrame(xy_dic)
 
-# Plot the surface.
-surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-ax.set_zlim(-0.10, 1.40)
-ax.zaxis.set_major_locator(LinearLocator(10))
-ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-fig.colorbar(surf, shrink=0.5, aspect=5)
-plt.savefig("franke_function")
+    poly = PolynomialFeatures(degree=deg)
+    X = poly.fit_transform(xy) # Find feature matrix 
 
+    # Scale X and z by subtracting mean (also ignore intercept of X to avoid
+    # getting a singular matrix when calculating OLS).
+    X = pd.DataFrame(X[:,1:])
+    X = X - X.mean()
+    z = pd.DataFrame(z)
+    z = z - z.mean()
 
-## OLS-function, structured close to the code in the lecture notes, with some changes for our case
-x = np.sort(np.random.rand(100))
-y = np.sort(np.random.rand(100))
+    ## Split X and z into train- and test data
+    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
+
+    ## Compute coefficients beta
+    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    
+    ## Compute z_tilde from train data and z_predict from test_data
+    z_tilde = X_train @ beta
+    z_predict = X_test @ beta
+
+    ## Compute mean squared error (MSE) and R2-value from the model on train- and test data
+    MSE_train = mean_squared_error(z_train,z_tilde)
+    MSE_test = mean_squared_error(z_test,z_predict)
+    R2_train = r2_score(z_train,z_tilde)
+    R2_test = r2_score(z_test,z_predict)
+    return MSE_train, MSE_test, R2_train, R2_test, beta
+
+## Creating data set
+N = 100 # Number of data points
+x = np.sort(np.random.rand(N))
+y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
-def OLSfit(x,y,z,deg):
-    X = np.zeros((len(x), int((deg+1)**2)-1)) #Design matrix
-    k = 0
-    for i in range(0, int(deg+1)):
-        for j in range(0, int(deg+1)):
-            if i==0 and j==0:
-                a ="Dont add anything" #We dont add the intercept
-            else:
-                X[:,k] = x**i*y**j
-                k+=1
+## Initiate arrays for the values that we want to compute
+deg_num = 5
+degs = np.linspace(1, deg_num, deg_num, dtype=int)
+MSE_train_array = np.zeros(deg_num)
+MSE_test_array = np.zeros(deg_num)
+R2_train_array = np.zeros(deg_num)
+R2_test_array = np.zeros(deg_num)
+beta_list = [0]*deg_num
 
-    X_pandas = pd.DataFrame(X[:,:])
-    X_pandas = X_pandas - X_pandas.mean()
-    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
-    z_test = z_test -np.mean(z_train)
-    z_train = z_train -np.mean(z_train)
-    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
-    ztilde = X_train @ beta
-    zpredict = X_test @ beta
-    MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
-    MSE_test = sklearn.metrics.mean_squared_error(z_test,zpredict)
-    R2_train = sklearn.metrics.r2_score(z_train,ztilde)
-    R2_test = sklearn.metrics.r2_score(z_test,zpredict)
-    return MSE_train, MSE_test, R2_train, R2_test, beta
-
-degs = np.linspace(1,5,5)
-MSE_train_array = np.zeros(5)
-MSE_test_array = np.zeros(5)
-R2_train_array = np.zeros(5)
-R2_test_array = np.zeros(5)
-beta_list = [0]*5
-for i in range(0,5):
+## Compute values from OLS
+for i in range(deg_num):
     MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = OLSfit(x,y,z,degs[i])
 
 plt.figure()
