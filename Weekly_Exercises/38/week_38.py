@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import pandas as pd
 
-## Define functions for Least Squares and Ridge
+## Define function for OLS
 def OLS(X, y):
     """ Ordinary Least Squares """
     XTX = X.transpose().dot(X)
@@ -17,26 +17,17 @@ def OLS(X, y):
     beta = XTXinv.dot(XTy)
     return beta
 
-def RDG(X, y, lambd):
-    """ Ridge Regression """
-    XTX = X.transpose().dot(X)
-    I = np.diag(np.diag(np.ones(np.shape(XTX)))) # Identity matrix with same shape as XTX
-    lambdI = pd.DataFrame(lambd * I)
-    XTXlambdInv = pd.DataFrame(inv(XTX + lambdI))
-    XTy = X.transpose().dot(y)
-    beta = XTXlambdInv.dot(XTy)
-    return beta
-
 ## Make data set.
 np.random.seed()
-n = 100
-x = np.linspace(-3, 3, n).reshape(-1, 1)
-y = np.exp(5*x) + 0.1 * np.random.normal(0, 0.1, x.shape)
+n = 200
+x = np.linspace(1, 10, n).reshape(-1, 1)
+y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2) + 0.1 * np.random.normal(0, 1, x.shape)
 
 ## Do regression
 deg_arr = np.arange(1, 16, 1) # Polynomial degree
 
 mses = np.zeros(len(deg_arr))
+mses_train = np.zeros(len(deg_arr))
 
 for i in range(len(deg_arr)):
     deg = deg_arr[i]
@@ -50,16 +41,22 @@ for i in range(len(deg_arr)):
 
     ## Predict y
     y_model_ols = X_test.dot(beta_ols)
+    y_model_ols_train = X_train.dot(beta_ols)
 
     ## Compute Mean Squared Error
     n = len(y_model_ols)
-    mse = mean_squared_error(y_test, y_model_ols) # 0th element is ols, 1-5 are rdg for the different lambdas
+    mse = mean_squared_error(y_test, y_model_ols)
+    mse_train = mean_squared_error(y_train, y_model_ols_train)
+
     mses[i] = mse
+    mses_train[i] = mse_train
 
 plt.figure()
 plt.title(f"Degree {deg_arr[i]}")
-plt.plot(deg_arr, mses)
 plt.xlabel("Complexity (Degree of polynomial)")
 plt.ylabel("Mean Square Error")
+plt.plot(deg_arr, mses, label="Test data")
+plt.plot(deg_arr, mses_train, label="Train data")
+plt.legend()
 plt.savefig(f"mse.pdf")
 
