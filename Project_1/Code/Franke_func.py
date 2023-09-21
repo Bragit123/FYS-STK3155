@@ -192,6 +192,7 @@ ax2.legend()
 ax2.set_title('R2_lasso vs degree')
 plt.legend
 
+#plt.show()
 
 
 
@@ -243,9 +244,12 @@ print("X",X_test,"z",z_test)
 plt.figure()
 plt.scatter(X_test, z_test, label='Data points')
 plt.legend()
-#plt.plot(poly_degree_list,MSE_ols_test_list)
-#plt.plot(poly_degree_list,MSE_ols_train_list)
+
+"""
+plt.figure()
+plt.plot(poly_degree_list,MSE_ols_test_list)
+plt.plot(poly_degree_list,MSE_ols_train_list)
 
 plt.show()
 
-"""
+
