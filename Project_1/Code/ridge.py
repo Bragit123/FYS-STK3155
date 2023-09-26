@@ -72,21 +72,22 @@ def ridgefit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int, lambda_val: 
     MSE_test = sklearn.metrics.mean_squared_error(z_test,zpredict)
     R2_train = sklearn.metrics.r2_score(z_train,ztilde)
     R2_test = sklearn.metrics.r2_score(z_test,zpredict)
+
     return MSE_train, MSE_test, R2_train, R2_test, beta
 
 
 ## Creating data set
-N = 50 # Number of data points
+N = 100 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
-z_with_noise = z# + np.random.normal(0, 1, z.shape)
+z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
 deg = 5 # Polynomial degree
 lambda_exp_start = -20
-lambda_exp_stop = -5
-lambda_num = 50
+lambda_exp_stop = -3
+lambda_num = 200
 
 lambdas = np.logspace(lambda_exp_start, lambda_exp_stop, num=lambda_num)
 MSE_train_array = np.zeros(lambda_num)
@@ -96,9 +97,10 @@ R2_test_array = np.zeros(lambda_num)
 beta_list = [0]*lambda_num
 
 for i in range(lambda_num):
-    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(x,y,z, deg,lambdas[i])
+    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(x, y, z, deg, lambdas[i])
 
 plt.figure()
+plt.title(f"Mean square error for Ridge regression with polynomial degree {deg}.")
 plt.plot(np.log10(lambdas),MSE_train_array,label="MSE_train, Ridge")
 plt.plot(np.log10(lambdas),MSE_test_array,label="MSE_test, Ridge")
 plt.xlabel("log10lambda")
@@ -107,6 +109,7 @@ plt.legend()
 plt.savefig("MSERidge.png")
 
 plt.figure()
+plt.title(f"R2-values for Ridge regression with polynomial degree {deg}.")
 plt.plot(np.log10(lambdas),R2_train_array,label="R2_train, Ridge")
 plt.plot(np.log10(lambdas),R2_test_array,label="R2_test, Ridge")
 plt.xlabel("log10lambda")
