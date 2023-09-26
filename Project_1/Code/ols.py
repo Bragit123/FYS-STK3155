@@ -58,7 +58,7 @@ def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
     X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
 
     ## Compute coefficients beta
-    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
     
     ## Compute z_tilde from train data and z_predict from test_data
     z_tilde = X_train @ beta
@@ -71,15 +71,17 @@ def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
     R2_test = r2_score(z_test,z_predict)
     return MSE_train, MSE_test, R2_train, R2_test, beta
 
+seed = np.random.seed(200)
+
 ## Creating data set
-N = 100 # Number of data points
+N = 50 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
-z_with_noise = z + np.random.normal(0, 1, z.shape)
+z_with_noise = z# + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 5
+deg_num = 30
 degs = np.linspace(1, deg_num, deg_num, dtype=int)
 MSE_train_array = np.zeros(deg_num)
 MSE_test_array = np.zeros(deg_num)
