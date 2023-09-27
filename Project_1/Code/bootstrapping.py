@@ -3,6 +3,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.utils import resample
+from fysstkprojectregression.py import Frankefunction, OLSfit, ridgefit, Lassofit
 
 np.random.seed(2018)
 
