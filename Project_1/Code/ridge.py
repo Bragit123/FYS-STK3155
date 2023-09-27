@@ -21,14 +21,15 @@ def FrankeFunction(x: float, y: float) -> float:
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
-    """ Calculates a model fitting our data using ordinary least squares.
+def ridgefit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int, lambda_val: float) -> tuple:
+    """ Calculates a model fitting our data using Ridge regression.
     
     ## Parameters
         x (ndarray): x-values of data points.
         y (ndarray): y-values of data points.
         z (ndarray): z-values of data points.
         deg (int): Degree of polynomial fit.
+        lambda_val (float): The lambda-value in Ridge regression.
     
     ## Returns
         MSE_train (float): Mean square error of model on training data.
@@ -54,22 +55,23 @@ def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
     X = X - X.mean()
     z = pd.DataFrame(z)
     z = z - z.mean()
-
+    
     ## Split X and z into train- and test data
-    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X, z, test_size= 0.2, random_state=0)
 
     ## Compute coefficients beta
-    beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
+    XTX_train = X_train.T @ X_train
+    beta = np.linalg.pinv(np.add(XTX_train, lambda_val*np.identity(XTX_train.shape[0]))) @ X_train.T @ z_train
     
     ## Compute z_tilde from train data and z_predict from test_data
-    z_tilde = X_train @ beta
-    z_predict = X_test @ beta
+    ztilde = X_train @ beta
+    zpredict = X_test @ beta
 
     ## Compute mean squared error (MSE) and R2-value from the model on train- and test data
-    MSE_train = mean_squared_error(z_train,z_tilde)
-    MSE_test = mean_squared_error(z_test,z_predict)
-    R2_train = r2_score(z_train,z_tilde)
-    R2_test = r2_score(z_test,z_predict)
+    MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
+    MSE_test = sklearn.metrics.mean_squared_error(z_test,zpredict)
+    R2_train = sklearn.metrics.r2_score(z_train,ztilde)
+    R2_test = sklearn.metrics.r2_score(z_test,zpredict)
 
     return MSE_train, MSE_test, R2_train, R2_test, beta
 
@@ -82,32 +84,35 @@ z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 15
-degs = np.linspace(1, deg_num, deg_num, dtype=int)
-MSE_train_array = np.zeros(deg_num)
-MSE_test_array = np.zeros(deg_num)
-R2_train_array = np.zeros(deg_num)
-R2_test_array = np.zeros(deg_num)
-beta_list = [0]*deg_num
+deg = 5 # Polynomial degree
+lambda_exp_start = -20
+lambda_exp_stop = -3
+lambda_num = 200
 
-## Compute values from OLS
-for i in range(deg_num):
-    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = OLSfit(x,y,z,degs[i])
+lambdas = np.logspace(lambda_exp_start, lambda_exp_stop, num=lambda_num)
+MSE_train_array = np.zeros(lambda_num)
+MSE_test_array = np.zeros(lambda_num)
+R2_train_array = np.zeros(lambda_num)
+R2_test_array = np.zeros(lambda_num)
+beta_list = [0]*lambda_num
+
+for i in range(lambda_num):
+    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(x, y, z, deg, lambdas[i])
 
 plt.figure()
-plt.title(f"Mean square error for ordinary least squares.")
-plt.plot(degs,MSE_train_array,label="MSE_train")
-plt.plot(degs,MSE_test_array,label="MSE_test")
-plt.xlabel("degree")
+plt.title(f"Mean square error for Ridge regression with polynomial degree {deg}.")
+plt.plot(np.log10(lambdas),MSE_train_array,label="MSE_train, Ridge")
+plt.plot(np.log10(lambdas),MSE_test_array,label="MSE_test, Ridge")
+plt.xlabel("log10lambda")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSEOLS.png")
+plt.savefig("MSERidge.png")
 
 plt.figure()
-plt.title(f"R2-values for ordinary least squares.")
-plt.plot(degs,R2_train_array,label="R2_train")
-plt.plot(degs,R2_test_array,label="R2_test")
-plt.xlabel("degree")
+plt.title(f"R2-values for Ridge regression with polynomial degree {deg}.")
+plt.plot(np.log10(lambdas),R2_train_array,label="R2_train, Ridge")
+plt.plot(np.log10(lambdas),R2_test_array,label="R2_test, Ridge")
+plt.xlabel("log10lambda")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2OLS.png")
+plt.savefig("R2Ridge.png")
