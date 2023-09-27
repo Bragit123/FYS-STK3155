@@ -66,7 +66,7 @@ def OLSfit(x,y,z,deg):
     X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
     z_test = z_test -np.mean(z_train)
     z_train = z_train -np.mean(z_train)
-    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
     ztilde = X_train @ beta
     zpredict = X_test @ beta
     MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
@@ -90,7 +90,7 @@ plt.plot(degs,MSE_test_array,label="MSE_test")
 plt.xlabel("degree")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSEOLS.png")
+plt.savefig("MSEOLS.pdf")
 
 plt.figure()
 plt.plot(degs,R2_train_array,label="R2_train")
@@ -98,7 +98,9 @@ plt.plot(degs,R2_test_array,label="R2_test")
 plt.xlabel("degree")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2OLS.png")
+plt.savefig("R2OLS.pdf")
+
+
 
 """
 #Dont know how to plot beta
@@ -134,7 +136,7 @@ def ridgefit(x,y,z,deg,lambda_val):
     z_test = z_test -np.mean(z_train)
     z_train = z_train -np.mean(z_train)
 
-    beta = (np.linalg.inv(np.add((X_train.T @ X_train), lambda_val*np.identity(int((deg+1)**2)-1)))) @ X_train.T @ z_train
+    beta = (np.linalg.pinv(np.add((X_train.T @ X_train), lambda_val*np.identity(int((deg+1)**2)-1)))) @ X_train.T @ z_train
     ztilde = X_train @ beta
     zpredict = X_test @ beta
     MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
@@ -159,7 +161,7 @@ plt.plot(np.log10(lambdas),MSE_test_array,label="MSE_test, Ridge")
 plt.xlabel("log10lambda")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSERidge.png")
+plt.savefig("MSERidge.pdf")
 
 plt.figure()
 plt.plot(np.log10(lambdas),R2_train_array,label="R2_train, Ridge")
@@ -167,7 +169,7 @@ plt.plot(np.log10(lambdas),R2_test_array,label="R2_test, Ridge")
 plt.xlabel("log10lambda")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2Ridge.png")
+plt.savefig("R2Ridge.pdf")
 
 #Lasso
 
@@ -212,7 +214,7 @@ plt.plot(np.log10(lambdas),MSE_test_array,label="MSE_test, Lasso")
 plt.xlabel("log10lambda")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSELasso.png")
+plt.savefig("MSELasso.pdf")
 
 plt.figure()
 plt.plot(np.log10(lambdas),R2_train_array,label="R2_train, Lasso")
@@ -220,7 +222,7 @@ plt.plot(np.log10(lambdas),R2_test_array,label="R2_test, Lasso")
 plt.xlabel("log10lambda")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2_train.png")
+plt.savefig("R2_train.pdf")
 
 
 #code taken from lecture notes (5.4 The bias-variance trade-off)
@@ -232,15 +234,14 @@ from sklearn.utils import resample
 
 np.random.seed(2018)
 
-n = 40
-n_boostraps = 100
-datapoints = 10000
+#n_boostraps = 100
+datapoints = 100
 maxdegree = 5
 
 bias = np.zeros(maxdegree)
 variance = np.zeros(maxdegree)
 MSE_array = np.zeros(maxdegree)
-degs=np.linspace(1,maxdegree,maxdegree)
+degs=np.zeros(maxdegree)
 
 def bootstrap(data, datapoints):
     t = np.zeros(datapoints)
@@ -249,39 +250,45 @@ def bootstrap(data, datapoints):
     for i in range(datapoints):
         t[i] = np.mean(data[np.random.randint(0,n,n)])
 
-    return t, np.std(data), np.std(t) #t, bias, variance
+    return t
 
-for deg in range(1,maxdegree+1):
-    X = np.zeros((len(x), int((deg+1)**2)-1)) #Design matrix
-    k = 0
-    for i in range(0, int(deg+1)):
-        for j in range(0, int(deg+1)):
-            if i==0 and j==0:
+for i in range(len(degs)):
+    t_x = bootstrap(x, datapoints)
+    t_y = bootstrap(y, datapoints)
+    t_z = bootstrap(z, datapoints)
+    degs[i] = i+6
+    X = np.zeros((len(t_x), int((degs[i]+1)**2)-1)) #Design matrix
+    l = 0
+
+    for j in range(0, int(degs[i])+1):
+        for k in range(0, int(degs[i])+1):
+            if j==0 and j==0:
                 a ="Dont add anything" #We dont add the intercept
             else:
-                X[:,k] = x**i*y**j
-                k+=1
+                X[:,l] = t_x**j*t_y**k
+                l+=1
+
 
     X_pandas = pd.DataFrame(X[:,:])
     X_pandas = X_pandas - X_pandas.mean()
-    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
+    X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, t_z, test_size= 0.2, random_state=0)
     z_test = z_test - np.mean(z_train)
     z_train = z_train - np.mean(z_train)
 
-    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
     ztilde = X_train @ beta
     zpredict = X_test @ beta
-    MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
-    MSE_array[deg-1] = sklearn.metrics.mean_squared_error(z_test,zpredict)
+    MSE_array[i] = np.mean((z_test - zpredict)**2)
+    bias[i] = np.mean((z_test - np.mean(zpredict))**2)
+    variance[i] = np.var(zpredict)
 
-    t, bias[deg-1], variance[deg-1] = bootstrap(z_test, datapoints)
 plt.figure()
 plt.plot(degs,bias,label="bias")
 plt.plot(degs,variance,label="variance")
-plt.plot(degs,MSE_array, label="MSE")
+plt.plot(degs,MSE_array, label="MSE test")
 plt.xlabel("Degree")
 plt.legend()
-plt.savefig("biasvariance.png")
+plt.savefig("biasvariance.pdf")
 
 
 
