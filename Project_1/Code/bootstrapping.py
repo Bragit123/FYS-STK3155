@@ -5,7 +5,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.utils import resample
 import numpy as np
 import matplotlib.pyplot as plt
-from fysstkproject1regression import Frankefunction, OLSfit, ridgefit, Lassofit
+
+
 
 np.random.seed(2018)
 
