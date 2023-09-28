@@ -3,11 +3,12 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.utils import resample
-from fysstkproject1regression.py import Frankefunction, OLSfit, ridgefit, Lassofit
+import numpy as np
+import matplotlib.pyplot as plt
+from fysstkproject1regression import Frankefunction, OLSfit, ridgefit, Lassofit
 
 np.random.seed(2018)
 
-#n_boostraps = 100
 datapoints = 100
 maxdegree = 5
 

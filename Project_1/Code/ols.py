@@ -21,23 +21,21 @@ def FrankeFunction(x: float, y: float) -> float:
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
-    """ Calculates a model fitting our data using ordinary least squares.
-    
+def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
+    """ Calculates the feature matrix X, and scales X and z (if scale = True).
+
     ## Parameters
         x (ndarray): x-values of data points.
         y (ndarray): y-values of data points.
         z (ndarray): z-values of data points.
         deg (int): Degree of polynomial fit.
+        scale (bool, default=True): If True, scale X and z before returning.
     
     ## Returns
-        MSE_train (float): Mean square error of model on training data.
-        MSE_test (float): Mean square error of model on test data.
-        R2_train (float): R2 value of model on training data.
-        R2_test (float): R2 value of model on test data.
-        beta (ndarray): Coefficients of model.
-    
+        X (ndarray): Feature matrix (Scaled if scale=True).
+        z (ndarray): z-values (scaled if scale=True).
     """
+
     ## Create feature matrix 
     xy_dic = {
         "x": x,
@@ -47,16 +45,58 @@ def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
 
     poly = PolynomialFeatures(degree=deg)
     X = poly.fit_transform(xy) # Find feature matrix 
+    
+    return X, z
 
-    # Scale X and z by subtracting mean (also ignore intercept of X to avoid
-    # getting a singular matrix when calculating OLS).
-    X = pd.DataFrame(X[:,1:])
-    X = X - X.mean()
-    z = pd.DataFrame(z)
-    z = z - z.mean()
+def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
+    """ Scales X_train, X_test, z_train and z_test by subtracting the mean of
+    the training data.
 
-    ## Split X and z into train- and test data
-    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
+    ## Parameters
+        X_train (ndarray): Feature matrix of training data.
+        X_test (ndarray): Feature matrix of testing data.
+        z_train (ndarray): z-values of training data.
+        z_test (ndarray): z-values of test data.
+    
+    ## Returns
+        X_train, X_test, z_train, z_test: Scaled versions of the input data.
+    """
+
+    # Compute the mean value of the training data.
+    X_train = pd.DataFrame(X_train[:,1:])
+    z_train = pd.DataFrame(z_train)
+    X_train_mean = X_train.mean()
+    z_train_mean = z_train.mean()
+
+    # Scale training data
+    X_train_scaled = X_train - X_train_mean
+    z_train_scaled = z_train - z_train_mean
+    
+    # Scale test data
+    X_test = pd.DataFrame(X_test[:,1:])
+    z_test = pd.DataFrame(z_test)
+    X_test_scaled = X_test - X_train_mean
+    z_test_scaled = z_test - z_train_mean
+
+    return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
+    
+
+def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
+    """ Calculates a model fitting our data using ordinary least squares.
+    
+    ## Parameters
+        X_train (ndarray): Feature matrix for training data.
+        X_test (ndarray): Feature matrix for test data.
+        z_train (ndarray): z-values of training data.
+        z_test (ndarray): z-values of test data.
+    
+    ## Returns
+        MSE_train (float): Mean square error of model on training data.
+        MSE_test (float): Mean square error of model on test data.
+        R2_train (float): R2 value of model on training data.
+        R2_test (float): R2 value of model on test data.
+        beta (ndarray): Coefficients of model.
+    """
 
     ## Compute coefficients beta
     beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
@@ -73,7 +113,6 @@ def OLSfit(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
 
     return MSE_train, MSE_test, R2_train, R2_test, beta
 
-
 ## Creating data set
 N = 100 # Number of data points
 x = np.sort(np.random.rand(N))
@@ -82,7 +121,7 @@ z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 15
+deg_num = 7
 degs = np.linspace(1, deg_num, deg_num, dtype=int)
 MSE_train_array = np.zeros(deg_num)
 MSE_test_array = np.zeros(deg_num)
@@ -92,7 +131,12 @@ beta_list = [0]*deg_num
 
 ## Compute values from OLS
 for i in range(deg_num):
-    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = OLSfit(x,y,z,degs[i])
+    X, z = FeatureMatrix(x, y, z, degs[i]) # Compute feature matrix
+    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
+    
+    X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
+
+    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = OLSfit(X_train, X_test, z_train, z_test) # Compute model
 
 plt.figure()
 plt.title(f"Mean square error for ordinary least squares.")
@@ -101,7 +145,7 @@ plt.plot(degs,MSE_test_array,label="MSE_test")
 plt.xlabel("degree")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSEOLS.png")
+plt.savefig("MSEOLS.pdf")
 
 plt.figure()
 plt.title(f"R2-values for ordinary least squares.")
@@ -110,4 +154,4 @@ plt.plot(degs,R2_test_array,label="R2_test")
 plt.xlabel("degree")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2OLS.png")
+plt.savefig("R2OLS.pdf")
