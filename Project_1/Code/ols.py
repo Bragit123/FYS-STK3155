@@ -21,7 +21,7 @@ def FrankeFunction(x: float, y: float) -> float:
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int, scale: bool = True) -> tuple:
+def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
     """ Calculates the feature matrix X, and scales X and z (if scale = True).
 
     ## Parameters
@@ -35,6 +35,7 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int, scale: 
         X (ndarray): Feature matrix (Scaled if scale=True).
         z (ndarray): z-values (scaled if scale=True).
     """
+
     ## Create feature matrix 
     xy_dic = {
         "x": x,
@@ -44,16 +45,41 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int, scale: 
 
     poly = PolynomialFeatures(degree=deg)
     X = poly.fit_transform(xy) # Find feature matrix 
-
-    if scale == True:
-        # Scale X and z by subtracting mean (also ignore intercept of X to avoid
-        # getting a singular matrix when calculating OLS).
-        X = pd.DataFrame(X[:,1:])
-        X = X - X.mean()
-        z = pd.DataFrame(z)
-        z = z - z.mean()
     
     return X, z
+
+def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
+    """ Scales X_train, X_test, z_train and z_test by subtracting the mean of
+    the training data.
+
+    ## Parameters
+        X_train (ndarray): Feature matrix of training data.
+        X_test (ndarray): Feature matrix of testing data.
+        z_train (ndarray): z-values of training data.
+        z_test (ndarray): z-values of test data.
+    
+    ## Returns
+        X_train, X_test, z_train, z_test: Scaled versions of the input data.
+    """
+
+    # Compute the mean value of the training data.
+    X_train = pd.DataFrame(X_train[:,1:])
+    z_train = pd.DataFrame(z_train)
+    X_train_mean = X_train.mean()
+    z_train_mean = z_train.mean()
+
+    # Scale training data
+    X_train_scaled = X_train - X_train_mean
+    z_train_scaled = z_train - z_train_mean
+    
+    # Scale test data
+    X_test = pd.DataFrame(X_test[:,1:])
+    z_test = pd.DataFrame(z_test)
+    X_test_scaled = X_test - X_train_mean
+    z_test_scaled = z_test - z_train_mean
+
+    return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
+    
 
 def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
     """ Calculates a model fitting our data using ordinary least squares.
@@ -95,7 +121,7 @@ z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 15
+deg_num = 7
 degs = np.linspace(1, deg_num, deg_num, dtype=int)
 MSE_train_array = np.zeros(deg_num)
 MSE_test_array = np.zeros(deg_num)
@@ -107,6 +133,9 @@ beta_list = [0]*deg_num
 for i in range(deg_num):
     X, z = FeatureMatrix(x, y, z, degs[i]) # Compute feature matrix
     X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
+    
+    X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
+
     MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = OLSfit(X_train, X_test, z_train, z_test) # Compute model
 
 plt.figure()
@@ -116,7 +145,7 @@ plt.plot(degs,MSE_test_array,label="MSE_test")
 plt.xlabel("degree")
 plt.ylabel("MSE")
 plt.legend()
-plt.savefig("MSEOLS.png")
+plt.savefig("MSEOLS.pdf")
 
 plt.figure()
 plt.title(f"R2-values for ordinary least squares.")
@@ -125,4 +154,4 @@ plt.plot(degs,R2_test_array,label="R2_test")
 plt.xlabel("degree")
 plt.ylabel("R2-score")
 plt.legend()
-plt.savefig("R2OLS.png")
+plt.savefig("R2OLS.pdf")
