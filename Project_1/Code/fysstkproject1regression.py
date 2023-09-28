@@ -187,6 +187,7 @@ def Lassofit(x,y,z,deg,lambda_val):
     X_pandas = pd.DataFrame(X[:,:])
     X_pandas = X_pandas - X_pandas.mean()
     X_train, X_test, z_train, z_test = sklearn.model_selection.train_test_split(X_pandas, z, test_size= 0.2, random_state=0)
+
     z_test = z_test -np.mean(z_train)
     z_train = z_train -np.mean(z_train)
 
@@ -223,11 +224,3 @@ plt.xlabel("log10lambda")
 plt.ylabel("R2-score")
 plt.legend()
 plt.savefig("R2_train.pdf")
-
-
-#code taken from lecture notes (5.4 The bias-variance trade-off)
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-from sklearn.utils import resample

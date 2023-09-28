@@ -1,4 +1,4 @@
-from fysstkprojectregression.py import Frankefunction, OLSfit, ridgefit, Lassofit
+from fysstkproject1regression.py import Frankefunction, OLSfit, ridgefit, Lassofit
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
@@ -18,83 +18,39 @@ y = np.sort(np.random.rand(nsamples))
 z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
-## Cross-validation on Ridge regression using KFold only
+## Cross-validation on Ridge regression
 
-# Decide which values of lambda to use
-nlambdas = 500
-lambdas = np.logspace(-3, 5, nlambdas)
 
+ #FeatureMatrix
+ #OLSfit
+ #ridgefit
+ #Lassofit
 # Initialize a KFold instance
-k = 5
-kfold = KFold(n_splits = k)
+def crossvalidation(k,x,y,z,lambda_val):
+    kfold_ind = np.linspace(0,len(data), k+1)  #postition indices for us to divide
+                                               #the training data and test data in different places
+    X = FeatureMatrix(x,y)
+    for i in range(k+1):
+        X_test = X[int(kfold_ind[i]):int(kfold_ind[i+1])]
+        X_train = X.splice(int(kfold_ind[i]),int(kfold_ind[i+1]))
+        z_test = z[int(kfold_ind[i]):int(kfold_ind[i+1])]
+        z_train = z.splice(int(kfold_ind[i]),int(kfold_ind[i+1]))
 
-# Perform the cross-validation to estimate MSE
-scores_KFold = np.zeros((nlambdas, k))
+        X_test, X_train, z_test, z_train = Scale(X_test, X_train, z_test, z_train)
 
-i = 0
-for lmb in lambdas:
-    ridge = Ridge(alpha = lmb)
-    j = 0
-    X = np.zeros((len(t_x), int((degs[i]+1)**2)-1)) #Design matrix
-    l = 0
+        MSE_train_array[i], MSE_test_array[i], R2_train, R2_test, beta = ridgefit(X_test, X_train, z_test, z_train,lambda_val)
 
-    for j in range(0, int(degs[i])+1):
-        for k in range(0, int(degs[i])+1):
-            if j==0 and j==0:
-                a ="Dont add anything" #We dont add the intercept
-            else:
-                X[:,l] = t_x**j*t_y**k
-                l+=1
-    for train_inds, test_inds in kfold.split(x):
-        xtrain = x[train_inds]
-        ytrain = y[train_inds]
+    return np.mean(MSE_test_array)
 
-        xtest = x[test_inds]
-        ytest = y[test_inds]
-
-        Xtrain = poly.fit_transform(xtrain[:, np.newaxis])
-        ridge.fit(Xtrain, ytrain[:, np.newaxis])
-
-        Xtest = poly.fit_transform(xtest[:, np.newaxis])
-        ypred = ridge.predict(Xtest)
-
-        scores_KFold[i,j] = np.sum((ypred - ytest[:, np.newaxis])**2)/np.size(ypred)
-
-        j += 1
-    i += 1
-
-
-estimated_mse_KFold = np.mean(scores_KFold, axis = 1)
-
-## Cross-validation using cross_val_score from sklearn along with KFold
-
-# kfold is an instance initialized above as:
-# kfold = KFold(n_splits = k)
-
-estimated_mse_sklearn = np.zeros(nlambdas)
-i = 0
-for lmb in lambdas:
-    ridge = Ridge(alpha = lmb)
-
-    X = poly.fit_transform(x[:, np.newaxis])
-    estimated_mse_folds = cross_val_score(ridge, X, y[:, np.newaxis], scoring='neg_mean_squared_error', cv=kfold)
-
-    # cross_val_score return an array containing the estimated negative mse for every fold.
-    # we have to the the mean of every array in order to get an estimate of the mse of the model
-    estimated_mse_sklearn[i] = np.mean(-estimated_mse_folds)
-
-    i += 1
-
-## Plot and compare the slightly different ways to perform cross-validation
+k=5 #folds
+lambdas = np.array([0.0001,0.001,0.01,0.1,1]) #lambdas = np.logspace(-3, 5, nlambdas)
+MSEs_test = np.zeros(len(lambdas))
+for i in range(len(lambdas)):
+    MSEs_test[i] = crossvalidation(k,x,y,z,lambdas[i])
 
 plt.figure()
-
-plt.plot(np.log10(lambdas), estimated_mse_sklearn, label = 'cross_val_score')
-plt.plot(np.log10(lambdas), estimated_mse_KFold, 'r--', label = 'KFold')
-
-plt.xlabel('log10(lambda)')
-plt.ylabel('mse')
-
+plt.plot(np.log(lambdas),MSEs_test, label="MSE test")
+plt.xlabel("log10(lambda)")
+plt.ylabel("MSE test")
 plt.legend()
-
-plt.show()
+plt.savefig("crossvalridge.pdf")
