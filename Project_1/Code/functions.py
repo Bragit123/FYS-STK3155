@@ -1,3 +1,11 @@
+"""
+# functions.py
+
+This python script contains different functions that are frequently used in our
+project. These functions are used for defining the FrankeFunction, finding the
+feature matrix, scaling our data and performing different regression methods.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn
@@ -21,7 +29,7 @@ def FrankeFunction(x: float, y: float) -> float:
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tuple:
+def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.ndarray:
     """ Calculates the feature matrix X, and scales X and z (if scale = True).
 
     ## Parameters
@@ -33,7 +41,6 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tupl
     
     ## Returns
         X (ndarray): Feature matrix (Scaled if scale=True).
-        z (ndarray): z-values (scaled if scale=True).
     """
 
     ## Create feature matrix 
@@ -46,7 +53,7 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> tupl
     poly = PolynomialFeatures(degree=deg)
     X = poly.fit_transform(xy) # Find feature matrix 
     
-    return X, z
+    return X
 
 def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
     """ Scales X_train, X_test, z_train and z_test by subtracting the mean of
