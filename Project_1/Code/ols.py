@@ -22,7 +22,7 @@ z = FrankeFunction(x, y)
 z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 7
+deg_num = 20
 degs = np.linspace(1, deg_num, deg_num, dtype=int)
 MSE_train_array = np.zeros(deg_num)
 MSE_test_array = np.zeros(deg_num)

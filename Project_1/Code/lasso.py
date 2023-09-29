@@ -33,12 +33,11 @@ MSE_test_array = np.zeros(lambda_num)
 R2_train_array = np.zeros(lambda_num)
 R2_test_array = np.zeros(lambda_num)
 beta_list = [0]*lambda_num
+X = FeatureMatrix(x, y, z, deg) # Compute feature matrix
+X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
+X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
 for i in range(lambda_num):
-    X = FeatureMatrix(x, y, z, deg) # Compute feature matrix
-    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
-    X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
-
     MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i] = Lassofit(X_train, X_test, z_train, z_test, lambdas[i])
 
 plt.figure()

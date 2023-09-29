@@ -25,7 +25,7 @@ z_with_noise = z + np.random.normal(0, 1, z.shape)
 deg = 5 # Polynomial degree
 lambda_exp_start = -20
 lambda_exp_stop = -3
-lambda_num = 200
+lambda_num = 1000
 
 lambdas = np.logspace(lambda_exp_start, lambda_exp_stop, num=lambda_num)
 MSE_train_array = np.zeros(lambda_num)
@@ -33,11 +33,15 @@ MSE_test_array = np.zeros(lambda_num)
 R2_train_array = np.zeros(lambda_num)
 R2_test_array = np.zeros(lambda_num)
 beta_list = [0]*lambda_num
+X = FeatureMatrix(x, y, z, deg) # Compute feature matrix
+X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
+X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
 for i in range(lambda_num):
-    X = FeatureMatrix(x, y, z, deg) # Compute feature matrix
-    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
-    X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
+    # X = pd.DataFrame(X[:,1:])
+    # X = X - X.mean()
+    # z = pd.DataFrame(z)
+    # z = z - z.mean()
 
     MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(X_train, X_test, z_train, z_test, lambdas[i])
 
