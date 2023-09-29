@@ -38,12 +38,12 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.n
         z (ndarray): z-values of data points.
         deg (int): Degree of polynomial fit.
         scale (bool, default=True): If True, scale X and z before returning.
-    
+
     ## Returns
         X (ndarray): Feature matrix (Scaled if scale=True).
     """
 
-    ## Create feature matrix 
+    ## Create feature matrix
     xy_dic = {
         "x": x,
         "y": y
@@ -51,8 +51,8 @@ def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.n
     xy = pd.DataFrame(xy_dic)
 
     poly = PolynomialFeatures(degree=deg)
-    X = poly.fit_transform(xy) # Find feature matrix 
-    
+    X = poly.fit_transform(xy) # Find feature matrix
+
     return X
 
 def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
@@ -64,7 +64,7 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
         X_test (ndarray): Feature matrix of testing data.
         z_train (ndarray): z-values of training data.
         z_test (ndarray): z-values of test data.
-    
+
     ## Returns
         X_train, X_test, z_train, z_test: Scaled versions of the input data.
     """
@@ -78,7 +78,7 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
     # Scale training data
     X_train_scaled = X_train - X_train_mean
     z_train_scaled = z_train - z_train_mean
-    
+
     # Scale test data
     X_test = pd.DataFrame(X_test[:,1:])
     z_test = pd.DataFrame(z_test)
@@ -90,13 +90,13 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
 
 def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
     """ Calculates a model fitting our data using ordinary least squares.
-    
+
     ## Parameters
         X_train (ndarray): Feature matrix for training data.
         X_test (ndarray): Feature matrix for test data.
         z_train (ndarray): z-values of training data.
         z_test (ndarray): z-values of test data.
-    
+
     ## Returns
         MSE_train (float): Mean square error of model on training data.
         MSE_test (float): Mean square error of model on test data.
@@ -107,7 +107,7 @@ def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test:
 
     ## Compute coefficients beta
     beta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ z_train
-    
+
     ## Compute z_tilde from train data and z_predict from test_data
     z_tilde = X_train @ beta
     z_predict = X_test @ beta
@@ -122,14 +122,14 @@ def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test:
 
 def ridgefit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray, lambda_val: float) -> tuple:
     """ Calculates a model fitting our data using Ridge regression.
-    
+
     ## Parameters
         X_train (ndarray): Feature matrix for training data.
         X_test (ndarray): Feature matrix for test data.
         z_train (ndarray): z-values of training data.
         z_test (ndarray): z-values of test data.
         lambda_val (float): lambda_value to use for the Ridge regression.
-    
+
     ## Returns
         MSE_train (float): Mean square error of model on training data.
         MSE_test (float): Mean square error of model on test data.
@@ -141,7 +141,7 @@ def ridgefit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     ## Compute coefficients beta
     XTX_train = X_train.T @ X_train
     beta = np.linalg.pinv(np.add(XTX_train, lambda_val*np.identity(XTX_train.shape[0]))) @ X_train.T @ z_train
-    
+
     ## Compute z_tilde from train data and z_predict from test_data
     ztilde = X_train @ beta
     zpredict = X_test @ beta
@@ -156,14 +156,14 @@ def ridgefit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
 
 def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray, lambda_val: float) -> tuple:
     """ Calculates a model fitting our data using Lasso regression.
-    
+
     ## Parameters
         X_train (ndarray): Feature matrix for training data.
         X_test (ndarray): Feature matrix for test data.
         z_train (ndarray): z-values of training data.
         z_test (ndarray): z-values of test data.
         lambda_val (float): lambda_value to use for the Ridge regression.
-    
+
     ## Returns
         MSE_train (float): Mean square error of model on training data.
         MSE_test (float): Mean square error of model on test data.
@@ -185,5 +185,5 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     MSE_test = sklearn.metrics.mean_squared_error(z_test,zpredict)
     R2_train = sklearn.metrics.r2_score(z_train,ztilde)
     R2_test = sklearn.metrics.r2_score(z_test,zpredict)
-    
+
     return MSE_train, MSE_test, R2_train, R2_test

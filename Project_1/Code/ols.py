@@ -32,7 +32,7 @@ beta_list = [0]*deg_num
 
 ## Compute values from OLS
 for i in range(deg_num):
-    X, z = FeatureMatrix(x, y, z, degs[i]) # Compute feature matrix
+    X = FeatureMatrix(x, y, z, degs[i]) # Compute feature matrix
     X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split into training and test data
     X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
