@@ -5,9 +5,6 @@ from sklearn.linear_model import Ridge
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import PolynomialFeatures
 from functions import *
-from ols import OLSfit
-from ridge import ridgefit
-from lasso import Lassofit
 
 
 # A seed just to ensure that the random numbers are the same for every run.
@@ -44,34 +41,42 @@ def crossvalidation(k,x,y,z,lambda_val,deg):
 
         X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) #Scaling
 
+        #Finding MSE for OLS, Lasso and Ridge
         MSE_train, MSE_test_array_OLS[i], R2_train, R2_test, beta = OLSfit(X_train, X_test, z_train, z_test)  #We only want to save MSE-test
         MSE_train, MSE_test_array_ridge[i], R2_train, R2_test, beta = ridgefit(X_train, X_test, z_train, z_test,lambda_val)
         MSE_train, MSE_test_array_Lasso[i], R2_train, R2_test = Lassofit(X_train, X_test, z_train, z_test,lambda_val)
 
-    return np.mean(MSE_test_array_OLS), np.mean(MSE_test_array_ridge), np.mean(MSE_test_array_Lasso)
+    return np.mean(MSE_test_array_OLS), np.mean(MSE_test_array_ridge), np.mean(MSE_test_array_Lasso)  #Return average MSE
 
-k=5 #folds
+ks = np.linspace(6,10,5) #folds
 lambdas = np.array([0.0001,0.001,0.01,0.1,1])
 degs = np.linspace(1,5,5)
-MSEs_test_OLS = np.zeros(len(degs))
-MSEs_test_ridge = np.zeros(len(lambdas))
-MSEs_test_Lasso = np.zeros(len(lambdas))
-
-for i in range(len(lambdas)):
-    MSE, MSEs_test_ridge[i], MSEs_test_Lasso[i] = crossvalidation(k,x,y,z,lambdas[i],5) #MSE is throwaway, deg=5
-for i in range(len(degs)):
-    MSEs_test_OLS[i], MSE, MSE2 = crossvalidation(k,x,y,z,0.1,int(degs[i])) #random lambda=0.1
 
 plt.figure()
-plt.plot(degs,MSEs_test_OLS, label="MSE test")
+for k in ks:
+    k = int(k)
+    MSEs_test_OLS = np.zeros(len(degs))
+
+    for i in range(len(degs)):
+        MSEs_test_OLS[i], MSE, MSE2 = crossvalidation(k,x,y,z,0.1,int(degs[i])) #random lambda=0.1
+
+    plt.plot(degs,MSEs_test_OLS, label=f"{k} folds")
+
 plt.xlabel("degree")
 plt.ylabel("MSE test")
-plt.title("MSE crossvalidation, OLS")
+plt.title(f"MSE crossvalidation, OLS")
 plt.legend()
 plt.savefig("crossvalOLS.pdf")
 
 plt.figure()
-plt.plot(np.log10(lambdas),MSEs_test_ridge, label="MSE test")
+for k in ks:
+    k = int(k)
+    MSEs_test_ridge = np.zeros(len(lambdas))
+    for i in range(len(lambdas)):
+        MSE, MSEs_test_ridge[i], MSE2 = crossvalidation(k,x,y,z,lambdas[i],5) #MSE,MSE2 is throwaway, deg=5
+
+    plt.plot(np.log10(lambdas),MSEs_test_ridge, label=f"{k} folds")
+
 plt.xlabel("log10(lambda)")
 plt.ylabel("MSE test")
 plt.title("MSE crossvalidation, Ridge")
@@ -79,7 +84,13 @@ plt.legend()
 plt.savefig("crossvalridge.pdf")
 
 plt.figure()
-plt.plot(np.log10(lambdas),MSEs_test_Lasso, label="MSE test")
+for k in ks:
+    k = int(k)
+    MSEs_test_Lasso = np.zeros(len(lambdas))
+    for i in range(len(lambdas)):
+        MSE, MSE2, MSEs_test_Lasso[i] = crossvalidation(k,x,y,z,lambdas[i],5) #MSE is throwaway, deg=5
+
+    plt.plot(np.log10(lambdas),MSEs_test_Lasso,label=f"{k} folds")
 plt.xlabel("log10(lambda)")
 plt.ylabel("MSE test")
 plt.title("MSE crossvalidation, Lasso")
