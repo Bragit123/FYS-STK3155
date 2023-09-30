@@ -5,10 +5,16 @@ from sklearn.pipeline import make_pipeline
 from sklearn.utils import resample
 import numpy as np
 import matplotlib.pyplot as plt
+from functions import *
 
+np.random.seed(200)
 
-
-np.random.seed(2018)
+## Creating data set
+N = 100 # Number of data points
+x = np.sort(np.random.rand(N))
+y = np.sort(np.random.rand(N))
+z = FrankeFunction(x, y)
+z_with_noise = z + np.random.normal(0, 1, z.shape)
 
 datapoints = 100
 maxdegree = 5
@@ -17,15 +23,6 @@ bias = np.zeros(maxdegree)
 variance = np.zeros(maxdegree)
 MSE_array = np.zeros(maxdegree)
 degs=np.zeros(maxdegree)
-
-def bootstrap(data, datapoints):
-    t = np.zeros(datapoints)
-    n = len(data)
-    # non-parametric bootstrap
-    for i in range(datapoints):
-        t[i] = np.mean(data[np.random.randint(0,n,n)])
-
-    return t
 
 for i in range(len(degs)):
     t_x = bootstrap(x, datapoints)

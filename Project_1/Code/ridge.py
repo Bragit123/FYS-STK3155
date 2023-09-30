@@ -38,11 +38,6 @@ X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split
 X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
 for i in range(lambda_num):
-    # X = pd.DataFrame(X[:,1:])
-    # X = X - X.mean()
-    # z = pd.DataFrame(z)
-    # z = z - z.mean()
-
     MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(X_train, X_test, z_train, z_test, lambdas[i])
 
 plt.figure()

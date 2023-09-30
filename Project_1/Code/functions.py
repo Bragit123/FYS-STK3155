@@ -7,19 +7,14 @@ feature matrix, scaling our data and performing different regression methods.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import sklearn
 import sklearn.model_selection
 from sklearn import linear_model
 import pandas as pd
 
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-
-from random import random, seed
-seed = np.random.seed(200)
 
 def FrankeFunction(x: float, y: float) -> float:
     """ Calculates the Franke function at a point (x,y) """
@@ -28,6 +23,7 @@ def FrankeFunction(x: float, y: float) -> float:
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
+
 
 def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.ndarray:
     """ Calculates the feature matrix X, and scales X and z (if scale = True).
@@ -66,7 +62,7 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
         z_test (ndarray): z-values of test data.
 
     ## Returns
-        X_train, X_test, z_train, z_test: Scaled versions of the input data.
+        X_train, X_test, z_train, z_test (ndarray): Scaled versions of the input data.
     """
 
     # Compute the mean value of the training data.
@@ -76,14 +72,14 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
     z_train_mean = z_train.mean()
 
     # Scale training data
-    X_train_scaled = X_train - X_train_mean
-    z_train_scaled = z_train - z_train_mean
+    X_train_scaled = np.asarray(X_train - X_train_mean)
+    z_train_scaled = np.asarray(z_train - z_train_mean)
 
     # Scale test data
     X_test = pd.DataFrame(X_test[:,1:])
     z_test = pd.DataFrame(z_test)
-    X_test_scaled = X_test - X_train_mean
-    z_test_scaled = z_test - z_train_mean
+    X_test_scaled = np.asarray(X_test - X_train_mean)
+    z_test_scaled = np.asarray(z_test - z_train_mean)
 
     return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
     
@@ -187,3 +183,43 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     R2_test = sklearn.metrics.r2_score(z_test,zpredict)
 
     return MSE_train, MSE_test, R2_train, R2_test
+
+
+def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, deg: int, num_samples: int) -> np.ndarray:
+    """ Computes the mean of bootstrap samples.
+    ## Parameters
+        X (ndarray): Feature matrix to compute bootstrap samples of.
+        z (ndarray): z-values to compute bootstrap samples of.
+        deg (int): Polynomial degree for the OLS fit.
+        num_samples (int): Number of samples to compute.
+    ## Returns
+        mse_train_mean (ndarray): Mean value of mean square errors for the
+        training data.
+        mse_test_mean (ndarray): Mean value of mean square errors for the
+        test data.
+        mse_train_std (ndarray): Standard deviation of mean square errors for
+        the training data.
+        mse_test_std (ndarray): Standard deviation of mean square errors for
+        the test data.
+    """
+    
+    mse_train = np.zeros(num_samples)
+    mse_test = np.zeros(num_samples)
+
+    n = np.shape(X)[0]
+    # non-parametric bootstrap
+    for i in range(num_samples):
+        indices = np.random.randint(0,n,n)
+        Xi = X[indices,:]
+        zi = z[indices]
+        X_train, X_test, z_train, z_test = train_test_split(Xi, zi, test_size=0.2) # Split into training and test data
+        X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
+
+        mse_train[i], mse_test[i], R2_train, R2_test, beta = OLSfit(X_train, X_test, z_train, z_test) # Compute model
+    
+    mse_train_mean = np.mean(mse_train)
+    mse_train_std = np.std(mse_train)
+    mse_test_mean = np.mean(mse_test)
+    mse_test_std = np.std(mse_test)
+
+    return mse_train_mean, mse_train_std, mse_test_mean, mse_test_std
