@@ -27,7 +27,7 @@ mse_test_std = np.zeros(deg_num)
 
 for i in range(deg_num):
     X = FeatureMatrix(x, y, z, degs[i])
-    mse_train_mean[i], mse_train_std[i], mse_test_mean[i], mse_test_std[i] = Bootstrap_OLS(X, z, degs[i], num_samples)
+    mse_train_mean[i], mse_train_std[i], mse_test_mean[i], mse_test_std[i] = Bootstrap_OLS(X, z, num_samples)
 
 plt.figure()
 plt.errorbar(degs, mse_train_mean, mse_train_std, label="MSE for training data", capsize=5, markeredgewidth=1)
