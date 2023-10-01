@@ -185,12 +185,11 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     return MSE_train, MSE_test, R2_train, R2_test
 
 
-def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, deg: int, num_samples: int) -> np.ndarray:
-    """ Computes the mean of bootstrap samples.
+def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, num_samples: int) -> tuple:
+    """ Computes the mean square error using bootstrap samples.
     ## Parameters
         X (ndarray): Feature matrix to compute bootstrap samples of.
         z (ndarray): z-values to compute bootstrap samples of.
-        deg (int): Polynomial degree for the OLS fit.
         num_samples (int): Number of samples to compute.
     ## Returns
         mse_train_mean (ndarray): Mean value of mean square errors for the
@@ -221,5 +220,73 @@ def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, deg: int, num_samples: int) -> n
     mse_train_std = np.std(mse_train)
     mse_test_mean = np.mean(mse_test)
     mse_test_std = np.std(mse_test)
+
+    return mse_train_mean, mse_train_std, mse_test_mean, mse_test_std
+
+def Crossvalidation(X: np.ndarray, z: np.ndarray, k: int, model: str, lambda_val: float = 0) -> tuple:
+    # (k,x,y,z,lambda_val,deg):
+    """ Computes the mean square error with specified model using
+    crossvalidation.
+    ## Parameters
+        X (ndarray): Feature matrix to compute cross validation of.
+        z (ndarray): z-values to compute cross validation samples of.
+        k (int): Number of folds for cross validation.
+        model (str): What model to compute mean square error for. Must be "ols",
+        "ridge" or "lasso".
+        lambda_val (float): Lambda value to pass to the model. (Only necessary
+        for ridge or lasso regression).
+    ## Returns
+        mse_train_mean (ndarray): Mean value of mean square errors for the
+        training data.
+        mse_train_std (ndarray): Standard deviation of mean square errors for
+        the training data.
+        mse_test_mean (ndarray): Mean value of mean square errors for the
+        test data.
+        mse_test_std (ndarray): Standard deviation of mean square errors for
+        the test data.
+    """
+
+    n = np.shape(X)[0]
+    #position indices for us to divide
+    #the training data and test data in different places
+    kfold_ind = np.linspace(0, n, k+1, dtype=int)
+
+    # Initiate mse arrays
+    mse_train_arr = np.zeros(k)
+    mse_test_arr = np.zeros(k)
+
+    for i in range(k):
+        #Dividing into train-test
+        i0 = kfold_ind[i] # Start index for test data
+        i1 = kfold_ind[i+1] # End index for test data
+        i_test = np.array(range(i0, i1)) # Indices of test data
+        X_test = X[i_test,:] # Extract test data from X
+        
+        X_copy = X.copy()
+        X_train = np.delete(X_copy, i_test, 0) # X_train is the remaining of X
+
+        z_test = z[i_test] # Extract test data from z
+        z_copy = z.copy()
+        z_train = np.delete(z_copy, i_test) # z_train is the remaining of z
+
+        X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scaling
+
+        # Compute MSE for the requested model.
+        if model == "ols":
+            mse_train_arr[i], mse_test_arr[i], R2_train, R2_test, beta = OLSfit(X_train, X_test, z_train, z_test)
+        elif model == "ridge":
+            mse_train_arr[i], mse_test_arr[i], R2_train, R2_test, beta = ridgefit(X_train, X_test, z_train, z_test,lambda_val)
+        elif model == "lasso":
+            mse_train_arr[i], mse_test_arr[i], R2_train, R2_test = Lassofit(X_train, X_test, z_train, z_test,lambda_val)
+        else:
+            print(f"{model} is not a recognized regression model. Expected 'ols', 'ridge' or 'lasso'")
+            SystemExit(1)
+    
+    # Compute mean and standard deviation of mean square error for training and
+    # test data.
+    mse_train_mean = np.mean(mse_train_arr)
+    mse_train_std = np.std(mse_train_arr)
+    mse_test_mean = np.mean(mse_train_arr)
+    mse_test_std = np.std(mse_train_arr)
 
     return mse_train_mean, mse_train_std, mse_test_mean, mse_test_std
