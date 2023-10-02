@@ -246,7 +246,12 @@ def Crossvalidation(X: np.ndarray, z: np.ndarray, k: int, model: str, lambda_val
         the test data.
     """
 
+    # Randomize the order of X and z arrays
     n = np.shape(X)[0]
+    shuffled_indices = np.random.permutation(n)
+    X = X[shuffled_indices, :]
+    z = z[shuffled_indices]
+
     #position indices for us to divide
     #the training data and test data in different places
     kfold_ind = np.linspace(0, n, k+1, dtype=int)

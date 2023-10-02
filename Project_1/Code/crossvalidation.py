@@ -9,7 +9,7 @@ from functions import *
 
 # A seed just to ensure that the random numbers are the same for every run.
 # Useful for eventual debugging.
-np.random.seed(3155)
+np.random.seed(200)
 
 # Generate the data.
 nsamples = 100
