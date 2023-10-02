@@ -38,7 +38,7 @@ X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split
 X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
 for i in range(lambda_num):
-    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = ridgefit(X_train, X_test, z_train, z_test, lambdas[i])
+    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = Ridgefit(X_train, X_test, z_train, z_test, lambdas[i])
 
 plt.figure()
 plt.title(f"Mean square error for Ridge regression with polynomial degree {deg}.")
