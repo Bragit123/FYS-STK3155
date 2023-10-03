@@ -25,7 +25,7 @@ def FrankeFunction(x: float, y: float) -> float:
     return term1 + term2 + term3 + term4
 
 
-def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.ndarray:
+def FeatureMatrix(x: np.ndarray, y: np.ndarray, deg: int) -> np.ndarray:
     """ Calculates the feature matrix X, and scales X and z (if scale = True).
 
     ## Parameters
@@ -169,7 +169,7 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     """
 
     ## Compute Lasso model using scikit-learn
-    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e9)) # Increased max_iter to avoid ConvergenceWarning
+    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e5), tol=1e-2) # Increased max_iter to avoid ConvergenceWarning
     clf.fit(X_train,z_train)
 
     ## Compute z_tilde from train data and z_predict from test_data
