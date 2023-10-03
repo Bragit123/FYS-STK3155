@@ -169,12 +169,13 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     """
 
     ## Compute Lasso model using scikit-learn
-    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e9)) # Increased max_iter to avoid ConvergenceWarning
+    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e5), tol=1e-2) # Increased max_iter to avoid ConvergenceWarning
     clf.fit(X_train,z_train)
 
     ## Compute z_tilde from train data and z_predict from test_data
     ztilde = clf.predict(X_train)
     zpredict = clf.predict(X_test)
+    beta = clf.coef_
 
     ## Compute mean squared error (MSE) and R2-value from the model on train- and test data
     MSE_train = sklearn.metrics.mean_squared_error(z_train,ztilde)
@@ -182,7 +183,7 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     R2_train = sklearn.metrics.r2_score(z_train,ztilde)
     R2_test = sklearn.metrics.r2_score(z_test,zpredict)
 
-    return MSE_train, MSE_test, R2_train, R2_test
+    return MSE_train, MSE_test, R2_train, R2_test, beta
 
 
 def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, num_samples: int) -> tuple:

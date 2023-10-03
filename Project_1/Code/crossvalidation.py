@@ -5,6 +5,7 @@ from sklearn.linear_model import Ridge
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import PolynomialFeatures
 from functions import *
+plt.style.use("seaborn-v0_8")
 
 
 # A seed just to ensure that the random numbers are the same for every run.

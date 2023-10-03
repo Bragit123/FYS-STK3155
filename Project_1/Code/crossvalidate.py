@@ -44,7 +44,7 @@ for i in range(deg_num):
 deg = 5
 lambda_exp_start = -10
 lambda_exp_stop = -3
-lambda_num = 30
+lambda_num = 100
 lambdas = np.logspace(lambda_exp_start, lambda_exp_stop, num=lambda_num)
 
 mse_ridge_cv = np.zeros(lambda_num)

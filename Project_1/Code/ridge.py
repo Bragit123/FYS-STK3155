@@ -10,6 +10,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from functions import *
+plt.style.use("seaborn-v0_8")
 
 from random import random, seed
 seed = np.random.seed(200)
