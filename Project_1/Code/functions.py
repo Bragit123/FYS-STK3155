@@ -25,7 +25,7 @@ def FrankeFunction(x: float, y: float) -> float:
     return term1 + term2 + term3 + term4
 
 
-def FeatureMatrix(x: np.ndarray, y: np.ndarray, z: np.ndarray, deg: int) -> np.ndarray:
+def FeatureMatrix(x: np.ndarray, y: np.ndarray, deg: int) -> np.ndarray:
     """ Calculates the feature matrix X, and scales X and z (if scale = True).
 
     ## Parameters
@@ -82,7 +82,7 @@ def Scale(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: 
     z_test_scaled = np.asarray(z_test - z_train_mean)
 
     return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
-    
+
 
 def OLSfit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_test: np.ndarray) -> tuple:
     """ Calculates a model fitting our data using ordinary least squares.
@@ -201,7 +201,7 @@ def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, num_samples: int) -> tuple:
         mse_test_std (ndarray): Standard deviation of mean square errors for
         the test data.
     """
-    
+
     mse_train = np.zeros(num_samples)
     mse_test = np.zeros(num_samples)
 
@@ -215,7 +215,7 @@ def Bootstrap_OLS(X: np.ndarray, z: np.ndarray, num_samples: int) -> tuple:
         X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
         mse_train[i], mse_test[i], R2_train, R2_test, beta = OLSfit(X_train, X_test, z_train, z_test) # Compute model
-    
+
     mse_train_mean = np.mean(mse_train)
     mse_train_std = np.std(mse_train)
     mse_test_mean = np.mean(mse_test)
@@ -266,7 +266,7 @@ def Crossvalidation(X: np.ndarray, z: np.ndarray, k: int, model: str, lambda_val
         i1 = kfold_ind[i+1] # End index for test data
         i_test = np.array(range(i0, i1)) # Indices of test data
         X_test = X[i_test,:] # Extract test data from X
-        
+
         X_copy = X.copy()
         X_train = np.delete(X_copy, i_test, 0) # X_train is the remaining of X
 
@@ -286,7 +286,7 @@ def Crossvalidation(X: np.ndarray, z: np.ndarray, k: int, model: str, lambda_val
         else:
             print(f"{model} is not a recognized regression model. Expected 'ols', 'ridge' or 'lasso'")
             SystemExit(1)
-    
+
     # Compute mean and standard deviation of mean square error for training and
     # test data.
     mse_train_mean = np.mean(mse_train_arr)
