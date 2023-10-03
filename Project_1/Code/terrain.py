@@ -6,6 +6,7 @@ from matplotlib import cm
 from functions import *
 from numpy.random import normal, uniform
 from sklearn.model_selection import train_test_split
+plt.style.use("seaborn-v0_8")
 
 
 # Load the terrain using sample code
@@ -22,12 +23,17 @@ plt.show()
 #Extracting the data, so we can use regression on it
 N = 100
 terrain1 = terrain1[:N,:N]
-x = np.linspace(0,1, np.shape(terrain1)[0])
-y = np.linspace(0,1, np.shape(terrain1)[1])
+z_shape = np.shape(terrain1)
+x = np.linspace(0,1, z_shape[0])
+y = np.linspace(0,1, z_shape[1])
+x, y = np.meshgrid(x, y)
 
 z = terrain1
 z = np.asarray(z)
 
+x = x.flatten()
+y = y.flatten()
+z = z.flatten()
 
 ## Initiate arrays for the values that we want to compute
 deg_min = 2
@@ -42,15 +48,15 @@ mse_ols_cv = np.zeros(deg_num)
 mse_ols_cv_std = np.zeros(deg_num)
 mse_ols = np.zeros(deg_num) # For OLS without crossvalidation
 for i in range(deg_num):
-    X = create_X(x, y, degs[i])
+    X = FeatureMatrix(x, y, degs[i])
 
     # OLS with crossvalidation
-    mse_train_mean, mse_train_std, mse_test_mean, mse_test_std = Crossvalidation(X, z.flatten(), k, model="ols")
+    mse_train_mean, mse_train_std, mse_test_mean, mse_test_std = Crossvalidation(X, z, k, model="ols")
     mse_ols_cv[i] = mse_test_mean
     mse_ols_cv_std[i] = mse_test_std
 
     # OLS without crossvalidation
-    X_train, X_test, z_train, z_test = train_test_split(X, z.flatten(), test_size=0.2)
+    X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
     X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
     mse_train, mse_test, r2_train, r2_test, beta = OLSfit(X_train, X_test, z_train, z_test)
     mse_ols[i] = mse_test
@@ -70,12 +76,12 @@ mse_lasso_cv = np.zeros(lambda_num)
 mse_lasso_cv_std = np.zeros(lambda_num)
 mse_lasso = np.zeros(lambda_num) # For Lasso without crossvalidation
 
-X = create_X(x, y, deg)
-X_train, X_test, z_train, z_test = train_test_split(X, z.flatten(), test_size=0.2)
+X = FeatureMatrix(x, y, deg)
+X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
 X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
 for i in range(lambda_num):
     # Ridge and Lasso with crossvalidation
-    mse_train_mean, mse_train_std, mse_test_mean, mse_test_std = Crossvalidation(X, z.flatten(), k, model="ridge", lambda_val=lambdas[i])
+    mse_train_mean, mse_train_std, mse_test_mean, mse_test_std = Crossvalidation(X, z, k, model="ridge", lambda_val=lambdas[i])
     mse_ridge_cv[i] = mse_test_mean
     mse_ridge_cv_std[i] = mse_test_std
 
