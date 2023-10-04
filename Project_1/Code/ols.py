@@ -20,10 +20,10 @@ N = 100 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
-z_with_noise = z + np.random.normal(0, 1, z.shape)
+z = z + 0.1*np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
-deg_num = 20
+deg_num = 8
 degs = np.linspace(1, deg_num, deg_num, dtype=int)
 MSE_train_array = np.zeros(deg_num)
 MSE_test_array = np.zeros(deg_num)

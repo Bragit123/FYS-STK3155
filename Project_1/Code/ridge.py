@@ -20,7 +20,7 @@ N = 100 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
-z_with_noise = z + np.random.normal(0, 1, z.shape)
+z = z + 0.1*np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
 deg = 5 # Polynomial degree

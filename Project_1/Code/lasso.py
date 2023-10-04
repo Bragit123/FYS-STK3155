@@ -10,16 +10,17 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from functions import *
+plt.style.use("seaborn-v0_8")
 
 from random import random, seed
 seed = np.random.seed(200)
 
 ## Creating data set
-N = 10 # Number of data points
+N = 30 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)
-z_with_noise = z + np.random.normal(0, 1, z.shape)
+z = z + 0.1*np.random.normal(0, 1, z.shape)
 
 ## Initiate arrays for the values that we want to compute
 deg = 5 # Polynomial degree
@@ -38,7 +39,7 @@ X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2) # Split
 X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test) # Scale data
 
 for i in range(lambda_num):
-    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i] = Lassofit(X_train, X_test, z_train, z_test, lambdas[i])
+    MSE_train_array[i], MSE_test_array[i], R2_train_array[i], R2_test_array[i], beta_list[i] = Lassofit(X_train, X_test, z_train, z_test, lambdas[i])
 
 plt.figure()
 plt.title(f"Mean square error for Lasso regression with polynomial degree {deg}.")

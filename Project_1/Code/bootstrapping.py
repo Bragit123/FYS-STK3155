@@ -25,9 +25,9 @@ MSE_array = np.zeros(maxdegree)
 degs=np.zeros(maxdegree)
 
 for i in range(len(degs)):
-    t_x = bootstrap(x, datapoints)
-    t_y = bootstrap(y, datapoints)
-    t_z = bootstrap(z, datapoints)
+    t_x = Bootstrap_OLS(x, datapoints)
+    t_y = Bootstrap_OLS(y, datapoints)
+    t_z = Bootstrap_OLS(z, datapoints)
     degs[i] = i+6
     X = np.zeros((len(t_x), int((degs[i]+1)**2)-1)) #Design matrix
     l = 0

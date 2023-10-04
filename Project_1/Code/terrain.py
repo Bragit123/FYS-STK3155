@@ -47,7 +47,7 @@ k = 5
 mse_ols_cv = np.zeros(deg_num)
 mse_ols_cv_std = np.zeros(deg_num)
 mse_ols = np.zeros(deg_num) # For OLS without crossvalidation
-betas_ols = np.zeros(deg_num)
+betas_ols = [0]*deg_num
 for i in range(deg_num):
     X = FeatureMatrix(x, y, degs[i])
 
@@ -64,7 +64,7 @@ for i in range(deg_num):
     betas_ols[i] = beta
     mse_ols[i] = mse_test
 
-## Ridge and Lasso
+## Ridge
 deg = 5
 lambda_exp_start = -10
 lambda_exp_stop = -3
@@ -74,12 +74,7 @@ lambdas = np.logspace(lambda_exp_start, lambda_exp_stop, num=lambda_num)
 mse_ridge_cv = np.zeros(lambda_num)
 mse_ridge_cv_std = np.zeros(lambda_num)
 mse_ridge = np.zeros(lambda_num) # For Ridge without crossvalidation
-betas_ridge = np.zeros(lambda_num)
-
-mse_lasso_cv = np.zeros(lambda_num)
-mse_lasso_cv_std = np.zeros(lambda_num)
-mse_lasso = np.zeros(lambda_num) # For Lasso without crossvalidation
-betas_lasso = np.zeros(lambda_num)
+betas_ridge = [0]*lambda_num
 
 X = FeatureMatrix(x, y, deg)
 X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
@@ -90,18 +85,11 @@ for i in range(lambda_num):
     mse_ridge_cv[i] = mse_test_mean
     mse_ridge_cv_std[i] = mse_test_std
 
-    mse_train_mean, mse_train_std, mse_test_mean, mse_test_std = Crossvalidation(X, z, k, model="lasso", lambda_val=lambdas[i])
-    mse_lasso_cv[i] = mse_test_mean
-    mse_lasso_cv_std[i] = mse_test_std
-
     # Ridge and Lasso without crossvalidation
     mse_train, mse_test, r2_train, r2_test, beta = Ridgefit(X_train, X_test, z_train, z_test, lambdas[i])
     mse_ridge[i] = mse_test
     betas_ridge[i] = beta
 
-    mse_train, mse_test, r2_train, r2_test, beta = Lassofit(X_train, X_test, z_train, z_test, lambdas[i])
-    mse_lasso[i] = mse_test
-    betas_lasso[i] = beta
 
 
 # Plot OLS
@@ -124,12 +112,119 @@ plt.errorbar(np.log10(lambdas), mse_ridge_cv, mse_ridge_cv_std, label="With cros
 plt.legend()
 plt.savefig(f"terrain_cvridge.pdf")
 
-# Plot Lasso
+
+
+
+#Visualising models
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from random import random, seed
+x_plot = np.linspace(0,1, z_shape[0])
+y_plot = np.linspace(0,1, z_shape[1])
+x_plot,y_plot = np.meshgrid(x_plot,y_plot)
+z_plot = np.reshape(z,z_shape)
 plt.figure()
-plt.title("Mean square error of lasso regression with and without crossvalidation")
-plt.xlabel("Lambda")
-plt.ylabel("Mean Square Error (MSE)")
-plt.plot(np.log10(lambdas), mse_lasso, label="Without crossvalidation")
-plt.errorbar(np.log10(lambdas), mse_lasso_cv, mse_lasso_cv_std, label="With crossvalidation", capsize=5, markeredgewidth=1)
-plt.legend()
-plt.savefig(f"cv_lasso.pdf")
+plt.title("Terrain Contour-plot")
+plt.contourf(x_plot,y_plot,z_plot,cmap=cm.coolwarm)
+plt.colorbar()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig("terraincontour.pdf")
+
+#fig = plt.figure()
+#ax = fig.add_subplot(projection='3d')
+#surf = ax.plot_surface(x_plot, y_plot, z_plot, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+#ax.set_zlim(-0.10, 1.40)
+#ax.zaxis.set_major_locator(LinearLocator(10))
+#ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+#fig.colorbar(surf, shrink=0.5, aspect=5)
+#plt.savefig("terrainsurfaceplot.pdf")
+#plt.show()
+#Finding the best degree:
+min_mse = abs(mse_ols[0])
+min_ind = 0
+for i in range(len(betas_ols)):
+    if abs(mse_ols[i])<min_mse:
+        beta_ols = betas_ols[i]
+        min_mse = abs(mse_ols[i])
+        min_ind = i
+
+print(f"Optimal degree using OLS: {int(degs[min_ind])}")
+X = FeatureMatrix(x, y, degs[min_ind])
+
+# OLS without crossvalidation
+X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
+X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
+
+mse_train, mse_test, r2_train, r2_test, beta = OLSfit(X_train, X_test, z_train, z_test)
+#z_shape_test = np.array([0.2*z_shape[0], z_shape[1]], dtype=int)
+
+zpredict = X[:,1:] @ beta
+zpredict = np.reshape(zpredict,z_shape)
+
+x_plot = np.linspace(0,1, z_shape[0])
+y_plot = np.linspace(0,1, z_shape[1])
+x_plot,y_plot = np.meshgrid(x_plot,y_plot)
+#fig = plt.figure()
+#ax = fig.add_subplot(projection='3d')
+#surf = ax.plot_surface(x_plot, y_plot, zpredict, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+#ax.set_zlim(-0.10, 1.40)
+#ax.zaxis.set_major_locator(LinearLocator(10))
+#ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+#fig.colorbar(surf, shrink=0.5, aspect=5)
+#plt.savefig("terrainols.pdf")
+#plt.show()
+
+plt.figure()
+plt.title("Terrain OLS")
+plt.contourf(x_plot,y_plot,zpredict,cmap=cm.coolwarm)
+plt.colorbar()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig("terrainols.pdf")
+
+
+#Finding the best lambda for Ridge:
+min_mse = abs(mse_ridge[0])
+min_ind = 0
+for i in range(len(betas_ridge)):
+    if abs(mse_ridge[i])<min_mse:
+        beta_ridge = betas_ridge[i]
+        min_mse = abs(mse_ridge[i])
+        min_ind = i
+
+deg = 5
+X = FeatureMatrix(x, y, deg)
+print(f"Optimal lambda using Ridge: {lambdas[min_ind]}")
+
+# Ridge without crossvalidation
+X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
+X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
+
+mse_train, mse_test, r2_train, r2_test, beta = Ridgefit(X_train, X_test, z_train, z_test, lambdas[min_ind])
+#z_shape_test = np.array([0.2*z_shape[0], z_shape[1]], dtype=int)
+
+zpredict = X[:,1:] @ beta
+zpredict = np.reshape(zpredict,z_shape)
+
+#x_plot = np.linspace(0,1, z_shape[0])
+#y_plot = np.linspace(0,1, z_shape[1])
+#x_plot,y_plot = np.meshgrid(x_plot,y_plot)
+#fig = plt.figure()
+#ax = fig.add_subplot(projection='3d')
+#surf = ax.plot_surface(x_plot, y_plot, zpredict, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+#ax.set_zlim(-0.10, 1.40)
+#ax.zaxis.set_major_locator(LinearLocator(10))
+#ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+#fig.colorbar(surf, shrink=0.5, aspect=5)
+#plt.savefig("terrainridge.pdf")
+#plt.show()
+
+plt.figure()
+plt.title("Terrain Ridge")
+plt.contourf(x_plot,y_plot,zpredict,cmap=cm.coolwarm)
+plt.colorbar()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig("terrainridge.pdf")

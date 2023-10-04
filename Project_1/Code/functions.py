@@ -169,7 +169,7 @@ def Lassofit(X_train: np.ndarray, X_test: np.ndarray, z_train: np.ndarray, z_tes
     """
 
     ## Compute Lasso model using scikit-learn
-    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e5), tol=1e-2) # Increased max_iter to avoid ConvergenceWarning
+    clf = linear_model.Lasso(lambda_val, fit_intercept=False, max_iter=int(1e5), tol=1e-1) # Increased max_iter to avoid ConvergenceWarning
     clf.fit(X_train,z_train)
 
     ## Compute z_tilde from train data and z_predict from test_data
@@ -283,7 +283,7 @@ def Crossvalidation(X: np.ndarray, z: np.ndarray, k: int, model: str, lambda_val
         elif model == "ridge":
             mse_train_arr[i], mse_test_arr[i], R2_train, R2_test, beta = Ridgefit(X_train, X_test, z_train, z_test,lambda_val)
         elif model == "lasso":
-            mse_train_arr[i], mse_test_arr[i], R2_train, R2_test = Lassofit(X_train, X_test, z_train, z_test,lambda_val)
+            mse_train_arr[i], mse_test_arr[i], R2_train, R2_test, beta = Lassofit(X_train, X_test, z_train, z_test,lambda_val)
         else:
             print(f"{model} is not a recognized regression model. Expected 'ols', 'ridge' or 'lasso'")
             SystemExit(1)
