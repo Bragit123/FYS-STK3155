@@ -2,7 +2,7 @@
 This folder contains the code for the project. These are all python codes that
 are run simply by using 
 
-$ python3 <filename>
+    $ python3 <filename>
 
 The only exception to this is the functions.py.
 
