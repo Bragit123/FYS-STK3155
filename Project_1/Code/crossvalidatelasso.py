@@ -45,10 +45,12 @@ for i in range(lambda_num):
 
 # # Plot Lasso
 plt.figure()
-plt.title("Mean square error of lasso regression with and without crossvalidation")
-plt.xlabel("Lambda")
-plt.ylabel("Mean Square Error (MSE)")
+plt.title("Mean square error of lasso regression with and without crossvalidation", fontsize=20)
+plt.xlabel("Lambda", fontsize=20)
+plt.ylabel("Mean Square Error (MSE)", fontsize=20)
+plt.yticks(fontsize=20)
+plt.xticks(fontsize=20)
 plt.plot(np.log10(lambdas), mse_lasso, label="Without crossvalidation")
 plt.errorbar(np.log10(lambdas), mse_lasso_cv, mse_lasso_cv_std, label="With crossvalidation", capsize=5, markeredgewidth=1)
-plt.legend()
-plt.savefig(f"cv_lasso.pdf")
+plt.legend(fontsize=20)
+plt.savefig(f"../Figures/cv_lasso.pdf", bbox_inches='tight')
