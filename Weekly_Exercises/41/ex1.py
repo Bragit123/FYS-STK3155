@@ -5,9 +5,9 @@ from sklearn.preprocessing import PolynomialFeatures
 np.random.seed(100)
 n = 100
 x = 2*np.random.rand(n,1)
-y = 5.2*x**3 - 3*x**2 - 2*x + 7 + 0.1*np.random.randn(n, 1)
+y = 4 + 3*x + np.random.randn(n,1)
 
-deg = 3
+deg = 1
 poly = PolynomialFeatures(degree=deg)
 X = poly.fit_transform(x)
 
@@ -29,5 +29,7 @@ def GD(X, y):
 
 beta_gd = GD(X, y)
 
-print(f"beta_ols: {beta_ols}")
-print(f"beta_gd: {beta_gd}")
+# print(f"beta_ols: {beta_ols}")
+# print(f"beta_gd: {beta_gd}")
+
+print(f"beta_difference = {np.linalg.norm(beta_gd-beta_ols)}")
