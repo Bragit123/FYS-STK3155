@@ -2,6 +2,7 @@ import numpy as np
 from typing import Callable
 import jax.numpy as jnp
 from jax import grad, jit, vmap
+
 class Tuning_algorithm:
     def __init__(self):
         self.rho = 0.99
@@ -32,18 +33,18 @@ class Tuning_algorithm:
         self.first_moment = 0
         self.second_moment = 0
 
-    def update(self, gradients: np.ndarray, iter: int = None):
+    def update(self, gradients: jnp.ndarray, iter: int = None):
         if self.algorithm == 0:
             update = self.eta*gradients
 
 
         elif self.algorithm == 1: #Adagrad
             Giter = (self.rho*self.Giter+(1-self.rho)*gradients*gradients)
-            update = gradients*self.eta/(self.delta+np.sqrt(self.Giter))
+            update = gradients*self.eta/(self.delta+jnp.sqrt(self.Giter))
 
         elif self.algorithm==2: #RMS-prop
             self.Giter = (self.rho*self.Giter+(1-rho)*gradients*gradients)
-            update = gradients*self.eta/(self.delta+np.sqrt(self.Giter))
+            update = gradients*self.eta/(self.delta+jnp.sqrt(self.Giter))
 
         elif self.algorithm == 3: #Adam
             if iter == None:
@@ -52,7 +53,7 @@ class Tuning_algorithm:
             self.second_moment = self.beta2*self.second_moment+(1-self.beta2)*gradients*gradients
             first_term = self.first_moment/(1.0-self.beta1**iter)
             second_term = self.second_moment/(1.0-self.beta2**iter)
-            update = self.eta*self.first_term/(np.sqrt(self.second_term)+self.delta)
+            update = self.eta*self.first_term/(jnp.sqrt(self.second_term)+self.delta)
         return update
 
 
@@ -89,13 +90,13 @@ class Gradient_Descent:
         if momentum == None:
             for iter in range(n_iter):
                 # gradient = (2.0/n)*X.T @ (X @ beta-y)
-                gradient = gradient_func(awlf.beta)
+                gradient = gradient_func(self.beta)
                 update_beta = self.tuning_algorithm.update(gradient, iter)
                 self.beta -= update_beta
 
         else:
             for iter in range(n_iter):
-                mom_term = momentum*np.copy(gradient) #adding the momentum term using the previous gradient
+                mom_term = momentum*jnp.copy(gradient) #adding the momentum term using the previous gradient
                 gradient = gradient_func(beta)
                 update_beta = self.tuning_algorithm.update(gradient, iter)+mom_term
                 self.beta -= update_beta
@@ -118,7 +119,7 @@ class Gradient_Descent:
             for epoch in range(n_epochs):
                 self.tuning_algorithm.reset_params()
                 for i in range(m):
-                    random_index = M*np.random.randint(m)
+                    random_index = M*jnp.random.randint(m)
                     xi = X[random_index:random_index+M]
                     yi = y[random_index:random_index+M]
                     gradient = (1.0/M)*gradient_func(yi, xi, beta)
@@ -129,11 +130,11 @@ class Gradient_Descent:
             for epoch in range(n_epochs):
                 self.tuning_algorithm.reset_params()
                 for i in range(m):
-                    random_index = M*np.random.randint(m)
+                    random_index = M*jnp.random.randint(m)
                     xi = X[random_index:random_index+M]
                     yi = y[random_index:random_index+M]
                     gradient = (1.0/M)*gradient_func(yi, xi, beta)
-                    mom_term = momentum*np.copy(gradient)
+                    mom_term = momentum*jnp.copy(gradient)
                     update_beta = self.tuning_algorithm.update(gradient, iter) + mom_term
                     self.beta -= update_beta
 
