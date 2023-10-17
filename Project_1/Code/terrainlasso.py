@@ -50,13 +50,15 @@ for i in range(lambda_num):
     betas_lasso[i] = beta
 # Plot Lasso
 plt.figure()
-plt.title("Mean square error of lasso regression with and without crossvalidation")
-plt.xlabel("Lambda")
-plt.ylabel("Mean Square Error (MSE)")
+plt.title("Mean square error of lasso regression with and without crossvalidation", fontsize=20)
+plt.xlabel("Lambda", fontsize=20)
+plt.ylabel("Mean Square Error (MSE)", fontsize=20)
+plt.yticks(fontsize=20)
+plt.xticks(fontsize=20)
 plt.plot(np.log10(lambdas), mse_lasso, label="Without crossvalidation")
 plt.errorbar(np.log10(lambdas), mse_lasso_cv, mse_lasso_cv_std, label="With crossvalidation", capsize=5, markeredgewidth=1)
-plt.legend()
-plt.savefig(f"terrain_cvlasso.pdf")
+plt.legend(fontsize=20)
+plt.savefig(f"../Figures/terrain_cvlasso.pdf", bbox_inches='tight')
 
 
 #Visualising models
@@ -81,7 +83,6 @@ X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.2)
 X_train, X_test, z_train, z_test = Scale(X_train, X_test, z_train, z_test)
 
 mse_train, mse_test, r2_train, r2_test, beta = Lassofit(X_train, X_test, z_train, z_test, lambdas[min_ind])
-#z_shape_test = np.array([0.2*z_shape[0], z_shape[1]], dtype=int)
 
 zpredict = X[:,1:] @ beta
 zpredict = np.reshape(zpredict,z_shape)
@@ -92,13 +93,17 @@ x_plot,y_plot = np.meshgrid(x_plot,y_plot)
 
 
 plt.figure()
-plt.title("Terrain Lasso")
+plt.title("Terrain Lasso", fontsize=20)
 plt.contourf(x_plot,y_plot,zpredict,cmap=cm.coolwarm)
-plt.colorbar()
-plt.xlabel("x")
-plt.ylabel("y")
-plt.savefig("terrainlasso.pdf")
+cbar = plt.colorbar()
+cbar.ax.tick_params(labelsize=20)
+plt.xlabel("x", fontsize=20)
+plt.ylabel("y", fontsize=20)
+plt.yticks(fontsize=20)
+plt.xticks(fontsize=20)
+plt.savefig("../Figures/terrainlasso.pdf", bbox_inches='tight')
 
+<<<<<<< HEAD
 z_plot = np.reshape(z,z_shape)
 plt.figure()
 plt.title("Terrain")
@@ -107,3 +112,16 @@ plt.colorbar()
 plt.xlabel("x")
 plt.ylabel("y")
 plt.savefig("terraincontour20x20.pdf")
+=======
+z_plot = np.reshape(z, z_shape)
+plt.figure()
+plt.title("Terrain", fontsize=20)
+plt.contourf(x_plot,y_plot,z_plot,cmap=cm.coolwarm)
+cbar = plt.colorbar()
+cbar.ax.tick_params(labelsize=20)
+plt.xlabel("x", fontsize=20)
+plt.ylabel("y", fontsize=20)
+plt.yticks(fontsize=20)
+plt.xticks(fontsize=20)
+plt.savefig("../Figures/terrainlasso20x20.pdf", bbox_inches='tight')
+>>>>>>> 17ccb7efbb63ae72d3f0e2fbc2d440c6337cc388
