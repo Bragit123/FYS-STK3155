@@ -84,10 +84,12 @@ class Gradient_Descent:
         else:
             gradient_func = self.gradient_func
         self.tuning_algorithm.set_tuning_algorithm(algorithm)
+
+        gradient = gradient_func(self.beta)
         if momentum == None:
             for iter in range(n_iter):
                 # gradient = (2.0/n)*X.T @ (X @ beta-y)
-                gradient = gradient_func(beta)
+                gradient = gradient_func(awlf.beta)
                 update_beta = self.tuning_algorithm.update(gradient, iter)
                 self.beta -= update_beta
 
@@ -95,14 +97,46 @@ class Gradient_Descent:
             for iter in range(n_iter):
                 mom_term = momentum*np.copy(gradient) #adding the momentum term using the previous gradient
                 gradient = gradient_func(beta)
-                update = self.tuning_algorithm.update(gradient, iter)+mom_term
-                self.beta -= update
+                update_beta = self.tuning_algorithm.update(gradient, iter)+mom_term
+                self.beta -= update_beta
 
         self.tuning_algorithm.set_tuning_algorithm("DEFAULT")
         self.tuning_algorithm.reset_params()
         return self.beta
 
-    def SGD(self, n_epochs, batch_size, momentum = None, use_jax = True):
-
+    def SGD(self, n_iter, n_epochs, batch_size, momentum = None, use_jax = True):
+        M = batch_size
+        n = len(self.y)
+        m = int(n/M) #number of minibatches
         """ Compute stochastic gradient descent (with momentum if specified)"""
-        return 0
+        if use_jax == True:
+            gradient_func = grad(self.cost_func)
+        else:
+            gradient_func = self.gradient_func
+        self.tuning_algorithm.set_tuning_algorithm(algorithm)
+        if momentum == None:
+            for epoch in range(n_epochs):
+                self.tuning_algorithm.reset_params()
+                for i in range(m):
+                    random_index = M*np.random.randint(m)
+                    xi = X[random_index:random_index+M]
+                    yi = y[random_index:random_index+M]
+                    gradient = (1.0/M)*gradient_func(yi, xi, beta)
+                    update_beta = self.tuning_algorithm.update(gradient, iter)
+                    self.beta -= update_beta
+
+        else:
+            for epoch in range(n_epochs):
+                self.tuning_algorithm.reset_params()
+                for i in range(m):
+                    random_index = M*np.random.randint(m)
+                    xi = X[random_index:random_index+M]
+                    yi = y[random_index:random_index+M]
+                    gradient = (1.0/M)*gradient_func(yi, xi, beta)
+                    mom_term = momentum*np.copy(gradient)
+                    update_beta = self.tuning_algorithm.update(gradient, iter) + mom_term
+                    self.beta -= update_beta
+
+        self.tuning_algorithm.set_tuning_algorithm("DEFAULT")
+
+        return self.beta
