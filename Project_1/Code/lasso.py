@@ -16,7 +16,7 @@ from random import random, seed
 seed = np.random.seed(200)
 
 ## Creating data set
-N = 30 # Number of data points
+N = 100 # Number of data points
 x = np.sort(np.random.rand(N))
 y = np.sort(np.random.rand(N))
 z = FrankeFunction(x, y)

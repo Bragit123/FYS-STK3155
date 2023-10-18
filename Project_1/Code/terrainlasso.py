@@ -103,6 +103,16 @@ plt.yticks(fontsize=20)
 plt.xticks(fontsize=20)
 plt.savefig("../Figures/terrainlasso.pdf", bbox_inches='tight')
 
+<<<<<<< HEAD
+z_plot = np.reshape(z,z_shape)
+plt.figure()
+plt.title("Terrain")
+plt.contourf(x_plot,y_plot,z_plot,cmap=cm.coolwarm)
+plt.colorbar()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig("terraincontour20x20.pdf")
+=======
 z_plot = np.reshape(z, z_shape)
 plt.figure()
 plt.title("Terrain", fontsize=20)
@@ -114,3 +124,4 @@ plt.ylabel("y", fontsize=20)
 plt.yticks(fontsize=20)
 plt.xticks(fontsize=20)
 plt.savefig("../Figures/terrainlasso20x20.pdf", bbox_inches='tight')
+>>>>>>> 17ccb7efbb63ae72d3f0e2fbc2d440c6337cc388
