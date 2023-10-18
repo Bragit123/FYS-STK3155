@@ -12,11 +12,6 @@ class Gradient_Descent:
         self.tuning_algorithms = ["DEFAULT", "ADAGRAD", "RMSPROP", "ADAM"] # List of available tuning algorithms in CAPS
         self.tuning = 0 # Index of 'active' tuning algorithm (chosen from tuning_algorithms)
     
-    def analytic_gradient(self, gradient_func):
-        """ Set an analytic gradient function to use in gradient descent
-        methods."""
-        self.gradient_func = gradient_func
-    
     def set_tuning_algorithm(self, algorithm: str):
         """ Choose algorithm for tuning the learning rate """
         algorithm = algorithm.upper()
@@ -33,7 +28,7 @@ class Gradient_Descent:
         attributes instead) """
         return t0/(t + t1)
 
-    def GD(self, n_iter, momentum = None, use_jax = True):
+    def GD(self, n_iter, momentum = None, use_jax = True, tuning_algorithm = "adagrad"):
         """ Compute gradient descent (with momentum if specified)"""
         return 0
     
