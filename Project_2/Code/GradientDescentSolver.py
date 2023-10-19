@@ -64,23 +64,6 @@ class Gradient_Descent:
         self.cost_func = cost_func
         self.beta = beta
         self.gradient_func = None
-<<<<<<< HEAD
-        self.tuning_algorithms = ["DEFAULT", "ADAGRAD", "RMSPROP", "ADAM"] # List of available tuning algorithms in CAPS
-        self.tuning = 0 # Index of 'active' tuning algorithm (chosen from tuning_algorithms)
-    
-    def set_tuning_algorithm(self, algorithm: str):
-        """ Choose algorithm for tuning the learning rate """
-        algorithm = algorithm.upper()
-        
-        algos = self.tuning_algorithms
-        if algorithm in algos:
-            self.tuning = algos.index(algorithm)
-        else:
-            self.tuning = 0
-            print("WARNING: Invalid tuning algorithm. Changed back to default (no tuning).")
-    
-    def learning_schedule(t0, t1, t):
-=======
 
         self.tuning_algorithm = Tuning_algorithm() # Index of 'active' tuning algorithm (chosen from tuning_algorithms)
 
@@ -91,16 +74,11 @@ class Gradient_Descent:
 
 
     def learning_schedule(self, t0, t1, t):
->>>>>>> 08b0fbc3d03a7d1a37bd92b33c5d28aef18604c8
         """ Compute learning rate (might want to have t0 and t1 as class
         attributes instead) """
         return t0/(t + t1)
 
-<<<<<<< HEAD
-    def GD(self, n_iter, momentum = None, use_jax = True, tuning_algorithm = "adagrad"):
-=======
     def GD(self, n_iter, momentum = None, use_jax = True, algorithm: str="DEFAULT"):
->>>>>>> 08b0fbc3d03a7d1a37bd92b33c5d28aef18604c8
         """ Compute gradient descent (with momentum if specified)"""
         if use_jax == True:
             gradient_func = grad(self.cost_func)
