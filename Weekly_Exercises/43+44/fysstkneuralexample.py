@@ -139,7 +139,7 @@ def feed_forward(X):
     a_h = sigmoid(z_h)
 
     # weighted sum of inputs to the output layer
-    z_o = np.matmul(a_h, output_weights) + output_bias
+    z_o = jnp.matmul(a_h, output_weights) + output_bias
     # softmax output
     # axis 0 holds each input and axis 1 the probabilities of each category
     probabilities = sigmoid(z_o)
@@ -155,16 +155,16 @@ lmbd = 0.01
 for i in range(1000):
     a_h, probabilities = feed_forward(X)
     target_XOR = target_XOR.reshape(-1,1)
-    error_output = probabilities - target_XOR
-    error_hidden = np.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    error_output = probabilities - target_XOR #grad_func(probabilities)
+    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
 
     # gradients for the output layer
-    output_weights_gradient = np.matmul(a_h.T, error_output)
-    output_bias_gradient = np.sum(error_output, axis=0)
+    output_weights_gradient = jnp.matmul(a_h.T, error_output)
+    output_bias_gradient = jnp.sum(error_output, axis=0)
 
     # gradient for the hidden layer
-    hidden_weights_gradient = np.matmul(X.T, error_hidden)
-    hidden_bias_gradient = np.sum(error_hidden, axis=0)
+    hidden_weights_gradient = jnp.matmul(X.T, error_hidden)
+    hidden_bias_gradient = jnp.sum(error_hidden, axis=0)
 
     #Regularization terms gradients
     output_weights_gradient += lmbd * output_weights
@@ -203,15 +203,15 @@ for i in range(1000):
     a_h, probabilities = feed_forward(X)
     target_AND = target_AND.reshape(-1,1)
     error_output = probabilities - target_AND
-    error_hidden = np.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
 
     # gradients for the output layer
-    output_weights_gradient = np.matmul(a_h.T, error_output)
-    output_bias_gradient = np.sum(error_output, axis=0)
+    output_weights_gradient = jnp.matmul(a_h.T, error_output)
+    output_bias_gradient = jnp.sum(error_output, axis=0)
 
     # gradient for the hidden layer
-    hidden_weights_gradient = np.matmul(X.T, error_hidden)
-    hidden_bias_gradient = np.sum(error_hidden, axis=0)
+    hidden_weights_gradient = jnp.matmul(X.T, error_hidden)
+    hidden_bias_gradient = jnp.sum(error_hidden, axis=0)
 
     #Regularization terms gradients
     output_weights_gradient += lmbd * output_weights
@@ -251,15 +251,15 @@ for i in range(1000):
     a_h, probabilities = feed_forward(X)
     target_OR = target_OR.reshape(-1,1)
     error_output = probabilities - target_OR
-    error_hidden = np.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
 
     # gradients for the output layer
-    output_weights_gradient = np.matmul(a_h.T, error_output)
-    output_bias_gradient = np.sum(error_output, axis=0)
+    output_weights_gradient = jnp.matmul(a_h.T, error_output)
+    output_bias_gradient = jnp.sum(error_output, axis=0)
 
     # gradient for the hidden layer
-    hidden_weights_gradient = np.matmul(X.T, error_hidden)
-    hidden_bias_gradient = np.sum(error_hidden, axis=0)
+    hidden_weights_gradient = jnp.matmul(X.T, error_hidden)
+    hidden_bias_gradient = jnp.sum(error_hidden, axis=0)
 
     #Regularization terms gradients
     output_weights_gradient += lmbd * output_weights
