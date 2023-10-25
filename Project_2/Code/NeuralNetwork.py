@@ -25,21 +25,23 @@ class Node:
         Computes the activation of the node from input x (the output from the
         nodes of the previous layer).
     """
-    def __init__(self, weights: np.ndarray, bias: float, activation_function: Callable[[np.ndarray], float]):
-        """ Constructor function
+    def __init__(self, n_weights: int, activation_function: Callable[[np.ndarray], float]):
+        """ Constructor function. Creates a node with n_weights random weights,
+        and one random bias (both weights and bias takes values from 0 to 1).
         
         ## Parameters
-            - weights (ndarray): Weights to use when computing the activation function.
-            - bias (float): Bias to use when computing the activation function.
+            - n_weights (int): Number of weights to assign the node. In the
+              neural network, this should be the same as the number of nodes in
+              the previous layer.
             - activation_function (Callable): The activation function. This should
             be a function that takes in an array (the weighted input from the
             previous layer) and returns a float (the activation of the node).
         """
-        self.weights = weights
-        self.bias = bias
+        self.weights = np.random.uniform(size=n_weights)
+        self.bias = np.random.uniform()
         self.activation_function = activation_function
         self.activation = 0 # Initializes the activation of this node.
-    
+ 
     def compute(self, x: np.ndarray) -> float:
         """ Computes the activation of this node, based on the input
         values (the output from the previous layer).
@@ -64,10 +66,10 @@ class Layer:
     ----------
     - nodes : list
         Nodes belonging to this layer.
-    - activation : ndarray
-        Stores the activation of each node as an array.
     - size : int
         Number of nodes in the layer.
+    - activations : ndarray
+        Stores the activation of each node as an array.
 
     ## Methods
     -------
@@ -75,23 +77,33 @@ class Layer:
         Computes the activation of the node from input x (the output from the
         nodes of the previous layer).
     """
-    def __init__(self, nodes: list):
+    def __init__(self, n_nodes: int, n_weights: int, activation_function: Callable[[np.ndarray], float]):
         """ Constructor function
         
         ## Parameters
-            - nodes (list): Nodes to include in the layer.
+            - n_nodes (int): Number of nodes to create in this layer.
+            - n_weights (int): Number of weights these nodes should have. This
+              number will be the same for all nodes in this layer, and should
+              correspond to the number of nodes in the previous layer of the
+              neural network.
+            - activation_function (Callable): The activation function. This should
+            be a function that takes in an array (the weighted input from the
+            previous layer) and returns a float (the activation of the node).
+            The activation_function will here be the same for all nodes in the layer.
         """
-        # Initiate nodes-list and activation-array.
-        self.nodes = nodes
-        self.activation = []
 
-        # Add node and activation from each input-node
-        for node in nodes:
-            self.activation.append(node.activation)
+        # Initiate nodes-list and activation-array.
+        self.nodes = []
+        for i in range(n_nodes):
+            node = Node(n_weights, activation_function)
+            self.nodes.append(node)
         
-        self.activation = np.asarray(self.activation) # Convert activation to numpy array
-        
-        self.size = len(nodes)
+        self.n_nodes = n_nodes
+        self.n_weights = n_weights
+        # Should consider wether this should really be an attribute. If yes:
+        # must make sure that this is updated any time the activation of one of
+        # the nodes are updated, and vice versa.
+        self.activations = np.zeros(n_nodes)
     
     def compute(self, x: np.ndarray) -> np.ndarray:
         """ Computes the activations of this layer, based on the input
@@ -105,12 +117,12 @@ class Layer:
             - activation (ndarray): The activation of this layer. This value is also stored as
             a variable in the layer.
         """
-        a = np.zeros(self.size)
-        for i in range(self.size):
+        a = np.zeros(self.n_nodes)
+        for i in range(self.n_nodes):
             a[i] = self.nodes[i].compute(x)
         
-        self.activation = a
-        return self.activation
+        self.activations = a
+        return self.activations
 
 class NeuralNetwork:
     """
@@ -130,13 +142,30 @@ class NeuralNetwork:
         nodes of the previous layer).
     - back_propagate():
     """
-    def __init__(self, layers: list, input_size: int):
+    def __init__(self, structure: np.ndarray, n_input: int, activation_function):
         """ Constructor function
         
         ## Parameters
             - layers (list): Layers to include in the neural network.
         """
         # Initiate nodes-list and activation-array.
-        self.layers = layers
-        self. input_size = input_size
-        self.size = len(layers)
+        # Example: structure = [5, 4, 5]
+        
+        self.n_layers = np.shape(structure)[0]
+        self.n_nodes = np.sum(structure)
+
+        layer = []
+        
+        for i in range(self.n_layers):
+            n_nodes = structure[i]
+            
+            if i == 0:
+                n_weights = n_input
+            else:
+                prev_layer = layer[i-1]
+                n_weights = prev_layer.n_nodes
+
+            layer = Layer(n_nodes, n_weights, activation_function)
+            self.layers.append(layer)
+        
+        self.n_input = n_input
