@@ -1,12 +1,13 @@
 import math
-import jax.numpy as np
+import autograd.numpy as np
 import sys
 import warnings
-from jax import grad, jacobian
+from autograd import grad, elementwise_grad
 from random import random, seed
 from copy import deepcopy, copy
 from typing import Tuple, Callable
 from sklearn.utils import resample
+from scheduler import *
 from funcs import *
 
 warnings.simplefilter("error")
@@ -239,7 +240,6 @@ class FFNN:
         """
 
         predict = self._feedforward(X)
-
         if self.classification:
             return np.where(predict > threshold, 1, 0)
         else:

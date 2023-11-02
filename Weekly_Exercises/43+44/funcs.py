@@ -1,6 +1,5 @@
-
-import jax.numpy as np
-from jax import jacobian
+import autograd.numpy as np
+from autograd import elementwise_grad
 
 def CostOLS(target):
     
@@ -27,7 +26,6 @@ def CostCrossEntropy(target):
         return -(1.0 / target.size) * np.sum(target * np.log(X + 10e-10))
 
     return func
-
 
 def identity(X):
     return X
@@ -72,4 +70,4 @@ def derivate(func):
         return func
 
     else:
-        return jacobian(func)
+        return elementwise_grad(func)

@@ -1,6 +1,7 @@
 
 import numpy as np
 from jax import grad, jacobian, vmap
+# from autograd import grad, elementwise_grad
 from sklearn.utils import resample
 from copy import copy
 
@@ -58,6 +59,7 @@ class FFNN:
         act = self.act_func
         grad_cost = grad(cost)
         grad_act = vmap(grad(act))
+        # grad_act = elementwise_grad(act)
 
         for i in range(len(self.weights) - 1, -1, -1):
             # Output layer:
@@ -69,20 +71,26 @@ class FFNN:
             else:
                 wdelta = self.weights[i + 1][1:, :] @ delta_matrix.T
                 dact = grad_act(self.z_matrices[i + 1])
-                delta_matrix = wdelta.T * dact
+                delta_matrix = (wdelta).T * dact
             
             # Calculate gradient
+            print(f"00 : {i} {self.a_matrices}")
+            print(f"10 : {self.a_matrices[i][:,1:].T}")
+            print(f"20 : {delta_matrix}")
             grad_weights = self.a_matrices[i][:, 1:].T @ delta_matrix
             grad_bias = np.sum(delta_matrix, axis=0).reshape(1, delta_matrix.shape[1])
 
             # Regularization term
-            grad_weights += self.weights[i][1:, :] * lam
+            print(f"1 : {grad_weights}")
+            print(f"2 : {self.weights[i][1:, :] * lam}")
+            grad_weights = grad_weights + self.weights[i][1:, :] * lam
+            print(grad_weights)
 
             # Use scheduler
-            print(f"grad_b = {grad_bias}")
-            print(f"sched_b = {self.schedulers_bias[i].update_change(grad_bias)}")
-            print(f"grad_w = {grad_weights}")
-            print(f"sched_w = {self.schedulers_weight[i].update_change(grad_weights)}")
+            # print(f"grad_b = {grad_bias}")
+            # print(f"sched_b = {self.schedulers_bias[i].update_change(grad_bias)}")
+            # print(f"grad_w = {grad_weights}")
+            # print(f"sched_w = {self.schedulers_weight[i].update_change(grad_weights)}")
             update_matrix = np.vstack(
                 [
                     self.schedulers_bias[i].update_change(grad_bias),
@@ -91,9 +99,9 @@ class FFNN:
             )
 
             # Update weights and bias
-            print(self.weights[i])
-            print(update_matrix)
-            print(i)
+            # print(self.weights[i])
+            # print(update_matrix)
+            # print(i)
             self.weights[i] -= update_matrix 
     
     def train(self, X, t, scheduler, batches=1, epochs=100, lam=0):
@@ -133,10 +141,10 @@ class FFNN:
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
                     
                     self.feedforward(X_batch)
-                    print()
-                    print(f"{e}.{i}:")
-                    print(f"z_mat = {self.z_matrices}")
-                    print(f"a_mat = {self.a_matrices}")
+                    # print()
+                    # print(f"{e}.{i}:")
+                    # print(f"z_mat = {self.z_matrices}")
+                    # print(f"a_mat = {self.a_matrices}")
                     self.backpropagate(X_batch, t_batch, lam)
                     # self.backback(X_batch, t_batch, lam)
                 
