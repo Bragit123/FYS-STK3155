@@ -13,7 +13,15 @@ import jax.numpy as jnp
 from jax import grad, random, jit
 
 def sigmoid(x):
-    return 1/(1 + jnp.exp(-x))
+    return 1.0/(1.0 + jnp.exp(-x))
+
+def sigmoid_grad(x):
+    return jnp.mean(1.0/(1.0 + jnp.exp(-x)))
+#def grad_sigmoid(x):
+#    def func(x):
+#        return 1/(1 + jnp.exp(-x))
+#    return func
+
 
 def feed_forward(X):
     # weighted sum of inputs to the hidden layer
@@ -109,12 +117,13 @@ def gradCostCrossEntropy(target,X):
 
     return grad(func)
 """
-target_XOR = yXOR
+target_XOR = yXOR.reshape(-1,1)
 target_OR = yOR
 target_AND = yAND
 
 cost_func = CostCrossEntropy
 grad_func = grad(cost_func(target_XOR))
+grad_sigmoid = grad(sigmoid_grad)
 eta = 0.1
 
 
@@ -143,7 +152,7 @@ def feed_forward(X):
     # softmax output
     # axis 0 holds each input and axis 1 the probabilities of each category
     probabilities = sigmoid(z_o)
-    return a_h, probabilities
+    return a_h, z_o, z_h, probabilities
 
 # we obtain a prediction by taking the class with the highest likelihood
 def predict(X):
@@ -153,10 +162,15 @@ def predict(X):
 lmbd = 0.01
 #XOR, back propagation
 for i in range(1000):
-    a_h, probabilities = feed_forward(X)
+    a_h, z_o,z_h, probabilities = feed_forward(X)
     target_XOR = target_XOR.reshape(-1,1)
-    error_output = probabilities - target_XOR #grad_func(probabilities)
-    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    #z_o.reshape((z_o.shape[0],))
+    #print(z_o.shape)
+
+    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
+    #print(a_h * (1 - a_h))
+    #print(grad_sigmoid(z_h))
+    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_h)#** a_h * (1 - a_h)
 
     # gradients for the output layer
     output_weights_gradient = jnp.matmul(a_h.T, error_output)
@@ -179,9 +193,16 @@ for i in range(1000):
     output_bias -= eta*output_bias_gradient
 
 
-a_h,predictions = feed_forward(X)
+a_h,z_o,z_h,predictions = feed_forward(X)
 print("XOR result after training")
 print(predictions)
+
+
+
+cost_func = CostCrossEntropy
+grad_func = grad(cost_func(target_AND))
+grad_sigmoid = grad(sigmoid_grad)
+eta = 0.1
 
 # Defining the neural network, not sure about these
 n_inputs, n_features = X.shape
@@ -200,10 +221,12 @@ output_bias = jnp.zeros(n_categories) + 0.01
 lmbd = 0.01
 #AND, back propagation
 for i in range(1000):
-    a_h, probabilities = feed_forward(X)
+    a_h, z_o, probabilities = feed_forward(X)
     target_AND = target_AND.reshape(-1,1)
-    error_output = probabilities - target_AND
-    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    #z_o.reshape((z_o.shape[0],))
+    #print(z_o.shape)
+    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
+    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_o)#* a_h * (1 - a_h)
 
     # gradients for the output layer
     output_weights_gradient = jnp.matmul(a_h.T, error_output)
@@ -226,10 +249,17 @@ for i in range(1000):
     output_bias -= eta*output_bias_gradient
 
 
-a_h,predictions = feed_forward(X)
+a_h,z_o,predictions = feed_forward(X)
 print("AND result after training")
 print(predictions)
 
+
+
+
+cost_func = CostCrossEntropy
+grad_func = grad(cost_func(target_OR))
+grad_sigmoid = grad(sigmoid_grad)
+eta = 0.1
 
 # Defining the neural network, not sure about these
 n_inputs, n_features = X.shape
@@ -248,10 +278,12 @@ output_bias = jnp.zeros(n_categories) + 0.01
 lmbd = 0.01
 #OR, back propagation
 for i in range(1000):
-    a_h, probabilities = feed_forward(X)
+    a_h, z_o, probabilities = feed_forward(X)
     target_OR = target_OR.reshape(-1,1)
-    error_output = probabilities - target_OR
-    error_hidden = jnp.matmul(error_output, output_weights.T) * a_h * (1 - a_h)
+    z_o.reshape((z_o.shape[0],))
+    #print(z_o.shape)
+    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
+    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_o)#* a_h * (1 - a_h)
 
     # gradients for the output layer
     output_weights_gradient = jnp.matmul(a_h.T, error_output)
@@ -274,6 +306,6 @@ for i in range(1000):
     output_bias -= eta*output_bias_gradient
 
 
-a_h,predictions = feed_forward(X)
+a_h,z_o,predictions = feed_forward(X)
 print("OR result after training")
 print(predictions)
