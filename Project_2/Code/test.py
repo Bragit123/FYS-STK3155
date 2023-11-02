@@ -1,7 +1,6 @@
 import numpy as np
 from GradientDescentSolver import Gradient_Descent
 from NeuralNetwork import Node, Layer
-
 from random import random, seed
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -13,7 +12,53 @@ import pandas as pd
 from GradientDescentSolver import *
 import jax.numpy as jnp
 from jax import grad, random, jit
+from neuralnetworksimulator import *
+from scheduler import *
+import sklearn
+import sklearn.model_selection
+# Design matrix
+X = np.array([ [0.0, 0.0], [0.0, 1.0], [1.0, 0.0],[1.0, 1.0]])
 
+# The XOR gate
+yXOR = np.array( [ 0.0, 1.0 ,1.0, 0.0])
+# The OR gate
+yOR = np.array( [ 0.0, 1.0 ,1.0, 1.0])
+# The AND gate
+yAND = np.array( [ 0.0, 0.0 ,0.0, 1.0])
+
+#poly_degree=3
+#X = create_X(x, y, poly_degree)
+
+X_train, X_test, t_train, t_test = sklearn.model_selection.train_test_split(X, yXOR)
+
+input_nodes = X_train.shape[1]
+output_nodes = 1
+
+
+def sigmoid(X):
+    try:
+        return 1.0 / (1 + np.exp(-X))
+    except FloatingPointError:
+        return np.where(X > np.zeros(X.shape), np.ones(X.shape), np.zeros(X.shape))
+
+def CostOLS(target):
+
+    def func(X):
+        return (1.0 / target.shape[0]) * np.sum((target - X) ** 2)
+
+    return func
+
+linear_regression = FFNN((input_nodes, output_nodes), output_func=identity, cost_func=CostOLS, seed=2023)
+
+linear_regression.reset_weights() # reset weights such that previous runs or reruns don't affect the weights
+
+scheduler = Constant(eta=1e-3) #eta
+scores = linear_regression.fit(X_train, t_train, scheduler)
+
+
+
+
+"""
 key = random.PRNGKey(456)
 class NeuralNetwork:
     def __init__(self, X, y, cost_func, eta = 0.01,lmbd=0.01, n_hidden_neurons = 2, n_categories = 1, n_features = 2, gradient_func=None):
@@ -95,7 +140,7 @@ class NeuralNetwork:
             self.output_bias -= self.eta*output_bias_gradient
         a_h, prob_last = self.feed_forward(self.X)
         return prob_last
-
+"""
 # Design matrix
 X = jnp.array([ [0.0, 0.0], [0.0, 1.0], [1.0, 0.0],[1.0, 1.0]])
 

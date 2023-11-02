@@ -2,7 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import datasets
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -11,12 +10,18 @@ from sklearn.preprocessing import PolynomialFeatures
 import pandas as pd
 import jax.numpy as jnp
 from jax import grad, random, jit
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+import seaborn as sns
+
+
+
 
 def sigmoid(x):
     return 1.0/(1.0 + jnp.exp(-x))
 
 def sigmoid_grad(x):
-    return jnp.mean(1.0/(1.0 + jnp.exp(-x)))
+    return jnp.sum(1.0/(1.0 + jnp.exp(-x)))
 #def grad_sigmoid(x):
 #    def func(x):
 #        return 1/(1 + jnp.exp(-x))
@@ -109,6 +114,8 @@ def CostCrossEntropy(target):
 
     return func
 
+
+
 """
 def gradCostCrossEntropy(target,X):
 
@@ -117,7 +124,7 @@ def gradCostCrossEntropy(target,X):
 
     return grad(func)
 """
-target_XOR = yXOR.reshape(-1,1)
+target_XOR = yXOR
 target_OR = yOR
 target_AND = yAND
 
@@ -156,20 +163,21 @@ def feed_forward(X):
 
 # we obtain a prediction by taking the class with the highest likelihood
 def predict(X):
-    probabilities = feed_forward(X)[1]
+    probabilities = feed_forward(X)[3]
     return jnp.argmax(probabilities, axis=1)
 
 lmbd = 0.01
+eta = 0.1
 #XOR, back propagation
 for i in range(1000):
-    a_h, z_o,z_h, probabilities = feed_forward(X)
+    a_h, z_o, z_h, probabilities = feed_forward(X)
     target_XOR = target_XOR.reshape(-1,1)
     #z_o.reshape((z_o.shape[0],))
     #print(z_o.shape)
 
-    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
-    #print(a_h * (1 - a_h))
-    #print(grad_sigmoid(z_h))
+    error_output = probabilities-target_XOR #grad_func(probabilities)*grad_sigmoid(z_o)
+    #print(grad_func(probabilities)*grad_sigmoid(z_o))
+    #print(probabilities-target_XOR)
     error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_h)#** a_h * (1 - a_h)
 
     # gradients for the output layer
@@ -221,12 +229,12 @@ output_bias = jnp.zeros(n_categories) + 0.01
 lmbd = 0.01
 #AND, back propagation
 for i in range(1000):
-    a_h, z_o, probabilities = feed_forward(X)
+    a_h, z_o, z_h, probabilities = feed_forward(X)
     target_AND = target_AND.reshape(-1,1)
     #z_o.reshape((z_o.shape[0],))
     #print(z_o.shape)
-    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
-    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_o)#* a_h * (1 - a_h)
+    error_output = probabilities-target_AND #grad_func(probabilities)*grad_sigmoid(z_o)
+    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_h)#* a_h * (1 - a_h)
 
     # gradients for the output layer
     output_weights_gradient = jnp.matmul(a_h.T, error_output)
@@ -249,7 +257,7 @@ for i in range(1000):
     output_bias -= eta*output_bias_gradient
 
 
-a_h,z_o,predictions = feed_forward(X)
+a_h,z_o,z_h,predictions = feed_forward(X)
 print("AND result after training")
 print(predictions)
 
@@ -278,12 +286,12 @@ output_bias = jnp.zeros(n_categories) + 0.01
 lmbd = 0.01
 #OR, back propagation
 for i in range(1000):
-    a_h, z_o, probabilities = feed_forward(X)
+    a_h, z_o, z_h, probabilities = feed_forward(X)
     target_OR = target_OR.reshape(-1,1)
-    z_o.reshape((z_o.shape[0],))
+    #z_o.reshape((z_o.shape[0],))
     #print(z_o.shape)
-    error_output = grad_func(probabilities)*grad_sigmoid(z_o) #probabilities-target_XOR
-    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_o)#* a_h * (1 - a_h)
+    error_output = probabilities-target_OR #grad_func(probabilities)*grad_sigmoid(z_o)
+    error_hidden = jnp.matmul(error_output, output_weights.T)*grad_sigmoid(z_h)#* a_h * (1 - a_h)
 
     # gradients for the output layer
     output_weights_gradient = jnp.matmul(a_h.T, error_output)
@@ -306,6 +314,55 @@ for i in range(1000):
     output_bias -= eta*output_bias_gradient
 
 
-a_h,z_o,predictions = feed_forward(X)
+a_h,z_o,z_h,predictions = feed_forward(X)
 print("OR result after training")
 print(predictions)
+
+#Scikit-learn
+# Design matrix
+X = np.array([ [0, 0], [0, 1], [1, 0],[1, 1]],dtype=np.float64)
+
+# The XOR gate
+yXOR = np.array( [ 0, 1 ,1, 0])
+# The OR gate
+yOR = np.array( [ 0, 1 ,1, 1])
+# The AND gate
+yAND = np.array( [ 0, 0 ,0, 1])
+
+# Defining the neural network
+n_inputs, n_features = X.shape
+n_hidden_neurons = 2
+n_categories = 2
+n_features = 2
+
+eta_vals = np.logspace(-5, 1, 7)
+lmbd_vals = np.logspace(-5, 1, 7)
+# store models for later use
+DNN_scikit = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
+epochs = 100
+
+for i, eta in enumerate(eta_vals):
+    for j, lmbd in enumerate(lmbd_vals):
+        dnn = MLPClassifier(hidden_layer_sizes=(n_hidden_neurons), activation='logistic',
+                            alpha=lmbd, learning_rate_init=eta, max_iter=epochs)
+        dnn.fit(X, yXOR)
+        DNN_scikit[i][j] = dnn
+        print("Learning rate  = ", eta)
+        print("Lambda = ", lmbd)
+        print("Accuracy score on data set: ", dnn.score(X, yXOR))
+        print()
+
+sns.set()
+test_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
+for i in range(len(eta_vals)):
+    for j in range(len(lmbd_vals)):
+        dnn = DNN_scikit[i][j]
+        test_pred = dnn.predict(X)
+        test_accuracy[i][j] = accuracy_score(yXOR, test_pred)
+
+fig, ax = plt.subplots(figsize = (10, 10))
+sns.heatmap(test_accuracy, annot=True, ax=ax, cmap="viridis")
+ax.set_title("Test Accuracy")
+ax.set_ylabel("$\eta$")
+ax.set_xlabel("$\lambda$")
+plt.show()
