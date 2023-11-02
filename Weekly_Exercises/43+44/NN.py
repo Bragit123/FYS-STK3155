@@ -79,10 +79,10 @@ class FFNN:
             grad_weights += self.weights[i][1:, :] * lam
 
             # Use scheduler
-            print(grad_bias)
-            print(self.schedulers_bias[i].update_change(grad_bias))
-            print(grad_weights)
-            print(self.schedulers_weight[i].update_change(grad_weights))
+            print(f"grad_b = {grad_bias}")
+            print(f"sched_b = {self.schedulers_bias[i].update_change(grad_bias)}")
+            print(f"grad_w = {grad_weights}")
+            print(f"sched_w = {self.schedulers_weight[i].update_change(grad_weights)}")
             update_matrix = np.vstack(
                 [
                     self.schedulers_bias[i].update_change(grad_bias),
@@ -93,52 +93,8 @@ class FFNN:
             # Update weights and bias
             print(self.weights[i])
             print(update_matrix)
-            self.weights[i] -= update_matrix
-    
-    def backback(self, X, t, lam):
-        out_derivative = vmap(grad((self.act_func)))
-        hidden_derivative = vmap(grad((self.act_func)))
-
-        for i in range(len(self.weights) - 1, -1, -1):
-            # delta terms for output
-            if i == len(self.weights) - 1:
-                # for multi-class classification
-                if (
-                    self.act_func.__name__ == "softmax"
-                ):
-                    delta_matrix = self.a_matrices[i + 1] - t
-                # for single class classification
-                else:
-                    cost_func_derivative = grad(self.cost_func(t))
-                    delta_matrix = out_derivative(
-                        self.z_matrices[i + 1].ravel()
-                    ) * cost_func_derivative(self.a_matrices[i + 1])
-
-            # delta terms for hidden layer
-            else:
-                delta_matrix = (
-                    self.weights[i + 1][1:, :] @ delta_matrix.T
-                ).T * hidden_derivative(self.z_matrices[i + 1])
-
-            # calculate gradient
-            gradient_weights = self.a_matrices[i][:, 1:].T @ delta_matrix
-            gradient_bias = np.sum(delta_matrix, axis=0).reshape(
-                1, delta_matrix.shape[1]
-            )
-
-            # regularization term
-            gradient_weights += self.weights[i][1:, :] * lam
-
-            # use scheduler
-            update_matrix = np.vstack(
-                [
-                    self.schedulers_bias[i].update_change(gradient_bias),
-                    self.schedulers_weight[i].update_change(gradient_weights),
-                ]
-            )
-
-            # update weights and bias
-            self.weights[i] -= update_matrix
+            print(i)
+            self.weights[i] -= update_matrix 
     
     def train(self, X, t, scheduler, batches=1, epochs=100, lam=0):
         np.random.seed(self.seed)
@@ -177,8 +133,12 @@ class FFNN:
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
                     
                     self.feedforward(X_batch)
-                    # self.backpropagate(X_batch, t_batch, lam)
-                    self.backback(X_batch, t_batch, lam)
+                    print()
+                    print(f"{e}.{i}:")
+                    print(f"z_mat = {self.z_matrices}")
+                    print(f"a_mat = {self.a_matrices}")
+                    self.backpropagate(X_batch, t_batch, lam)
+                    # self.backback(X_batch, t_batch, lam)
                 
                 # Reset schedulers for each epoch
                 for scheduler in self.schedulers_weight:

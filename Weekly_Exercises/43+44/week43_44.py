@@ -39,8 +39,12 @@ dim = (2, 2, 1)
 Neural = FFNN(dim, sigmoid, CostOLS)
 
 output = Neural.predict(X)
-print("Before training:")
-print(output)
+# print("Before training:")
+# print(output)
+
+w = Neural.weights
+print("Weights:")
+print(w)
 
 Neural.train(X, t_XOR, scheduler)
 output = Neural.predict(X)

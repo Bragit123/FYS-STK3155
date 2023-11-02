@@ -6,18 +6,11 @@ from jax import grad, vmap
 def f(x):
     return jnp.exp(x)
 
-df = vmap(grad(f))
+# df = vmap(grad(f))
+df = vmap(grad(f), out_axes=1)
 
-a = np.array([1,2,3], dtype=float)
-A = np.array([[1],[2],[3]], dtype=float)
-
-print(a, A)
-
-aa = df(a)
-print(aa)
-
-# A = np.reshape(A, (A.shape[0],1))
-A = A.ravel()
-print(A)
-AA = df(A)
-print(AA)
+# X = np.array([[1,2],[3,4],[5,6]], dtype=float)
+X = np.array([[1],[2],[3]], dtype=float)
+# X = np.array([1,2,3], dtype=float)
+# print(df(X[:,0]))
+print(df(X))
