@@ -1,27 +1,10 @@
-import math
-import autograd.numpy as np
-import sys
-import warnings
-from autograd import grad, elementwise_grad
-from random import random, seed
-from copy import deepcopy, copy
-from typing import Tuple, Callable
-from sklearn.utils import resample
+import numpy as np
+from typing import Callable
+import jax.numpy as jnp
+from jax import grad, jit, vmap, random
+from GradientDescentSolver import *
 
-warnings.simplefilter("error")
-
-def sigmoid(X):
-    try:
-        return 1.0 / (1 + np.exp(-X))
-    except FloatingPointError:
-        return np.where(X > np.zeros(X.shape), np.ones(X.shape), np.zeros(X.shape))
-
-def CostOLS(target):
-
-    def func(X):
-        return (1.0 / target.shape[0]) * np.sum((target - X) ** 2)
-
-    return func
+key = random.PRNGKey(456)
 #Code taken from exercises
 class FFNN:
     """
@@ -72,7 +55,7 @@ class FFNN:
         self,
         X: np.ndarray,
         t: np.ndarray,
-        scheduler,#: Scheduler,
+        scheduler: Scheduler,
         batches: int = 1,
         epochs: int = 100,
         lam: float = 0,

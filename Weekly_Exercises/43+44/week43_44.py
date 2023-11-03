@@ -3,7 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import pandas as pd
-from NN import FFNN
+from lec_notes import FFNN
 from scheduler import Constant
 
 def sigmoid(X):
@@ -15,7 +15,7 @@ def CostOLS(target):
     return func
 
 def CostCrossEntropy(target):
-    
+
     def func(X):
         return -(1.0 / target.size) * jnp.sum(target * jnp.log(X + 10e-10))
 
