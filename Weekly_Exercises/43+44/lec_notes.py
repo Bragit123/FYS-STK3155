@@ -121,7 +121,7 @@ class FFNN:
 
         batch_size = X.shape[0] // batches
 
-        X, t = resample(X, t)
+        X, t = resample(X, t, replace=False)
 
         # this function returns a function valued only at X
         cost_function_train = self.cost_func(t)
@@ -240,10 +240,12 @@ class FFNN:
         """
 
         predict = self._feedforward(X)
-        if self.classification:
-            return np.where(predict > threshold, 1, 0)
-        else:
-            return predict
+        # if self.classification:
+        #     print("Classifying!")
+        #     return np.where(predict > threshold, 1, 0)
+        # else:
+        #     return predict
+        return predict
 
     def reset_weights(self):
         """

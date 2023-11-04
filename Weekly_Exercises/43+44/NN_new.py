@@ -1,7 +1,6 @@
 
 import numpy as np
-from jax import grad, jacobian, vmap
-# from autograd import grad, elementwise_grad
+from jax import grad, jacobian, vmap, pmap
 from sklearn.utils import resample
 from copy import copy
 
@@ -27,7 +26,7 @@ class FFNN:
 
         for i in range(n_layers - 1):
             weight_shape = (self.dimensions[i] + 1, self.dimensions[i + 1])
-            weight_arr = np.random.normal(size=weight_shape)
+            weight_arr = np.random.normal(size=weight_shape)*0.1
             weight_arr[0,:] = np.random.normal(size=self.dimensions[i + 1]) * 0.01 # Bias
             self.weights.append(weight_arr)
     
@@ -54,7 +53,7 @@ class FFNN:
         
         return a
     
-    def backpropagate(self, X, t, lam):
+    def backpropagate(self, X, t, lam=0):
         cost = self.cost_func(t)
         act = self.act_func
         grad_cost = grad(cost)
@@ -80,12 +79,20 @@ class FFNN:
             grad_weights = grad_weights + self.weights[i][1:, :] * lam
 
             # Use scheduler
+            # update_matrix = np.vstack(
+            #     [
+            #         self.schedulers_bias[i].update_change(grad_bias),
+            #         self.schedulers_weight[i].update_change(grad_weights)
+            #     ]
+            # )
+            eta = 0.01
             update_matrix = np.vstack(
                 [
-                    self.schedulers_bias[i].update_change(grad_bias),
-                    self.schedulers_weight[i].update_change(grad_weights)
+                    eta*grad_weights,
+                    eta*grad_bias
                 ]
             )
+
             # Update weights and bias
             self.weights[i] -= update_matrix 
     
@@ -126,6 +133,9 @@ class FFNN:
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
                     
                     self.feedforward(X_batch)
+                    print()
+                    print(f"{e}.{i}:")
+                    print(f"a_mat = {self.a_matrices[-1]}")
                     self.backpropagate(X_batch, t_batch, lam)
                 
                 # Reset schedulers for each epoch
@@ -141,7 +151,7 @@ class FFNN:
                 train_errors[e] = train_error
 
                 progression = e / epochs
-                print(f"Progress: {progression*100:.0f}%", end="\r")
+                print(f"Progress: {progression*100}%")
 
         except KeyboardInterrupt:
             pass
@@ -150,4 +160,4 @@ class FFNN:
         scores = dict()
         scores["train_errors"] = train_errors
 
-        return scores
+        return
