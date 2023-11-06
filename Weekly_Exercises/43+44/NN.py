@@ -1,7 +1,11 @@
 
+"""
+This code is largely inspired by the lecture notes by Morten Hjort-Jensen at the
+following link:
+https://compphysics.github.io/MachineLearning/doc/LectureNotes/_build/html/exercisesweek43.html#the-neural-network
+"""
 import numpy as np
 from jax import grad, jacobian, vmap
-# from autograd import grad, elementwise_grad
 from sklearn.utils import resample
 from copy import copy
 

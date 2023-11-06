@@ -8,24 +8,13 @@ from funcs import sigmoid
 # grad_sigmoid = jacobian(sigmoid)
 # grad_sigmoid = grad(sigmoid)
 
-def f(X):
-    return X**2
-df = grad(f)
-
-X = np.arange(8, dtype=float).reshape(4,2)
-res = np.zeros(8).reshape(4,2)
-
-for i in range(4):
-    for j in range(2):
-        res[i,j] = df(X[i,j])
-
-print(f"X = {X}")
-print(f"Expected = {res}")
+# def cost(x, t):
+#     return -(1.0 / t.size) * jnp.sum(t * jnp.log(x + 10e-10))
+def f(x):
+    return x**2
 
 df = vmap(vmap(grad(f)))
-res = df(X)
-print(f"vmap = {res}")
 
-df = vmap(jacobian(f))
-res = df(X)
-print(f"Jacobian = {res}")
+x = np.arange(10, dtype=float).reshape(5,2)
+print(x)
+print(df(x))
