@@ -47,9 +47,9 @@ print(output)
 
 # print("Scores")
 # print(scores)
-epochs = np.arange(len(scores["train_errors"]))
-plt.plot(epochs, scores["train_errors"])
-plt.show()
+# epochs = np.arange(len(scores["train_errors"]))
+# plt.plot(epochs, scores["train_errors"])
+# plt.show()
 err0 = scores["train_errors"][0]
 err1 = scores["train_errors"][-1]
 costf = CostCrossEntropy(t_XOR)
@@ -58,22 +58,22 @@ print(f"cost = {cost}")
 print(f"err0 = {err0} ; err1 = {err1}")
 
 # With scikit-learn
-# t_XOR = np.array([0,1,1,0], dtype=float)
-# clf = MLPClassifier(solver="sgd", alpha=0, hidden_layer_sizes=(2), random_state=1)
-# clf.fit(X, t_XOR)
-# output = clf.predict_proba(X)
-# print("Scikit-learn")
-# print(output)
+t_XOR = np.array([0,1,1,0], dtype=float)
+clf = MLPClassifier(solver="sgd", alpha=0, hidden_layer_sizes=(2), random_state=1)
+clf.fit(X, t_XOR)
+output = clf.predict_proba(X)
+print("Scikit-learn")
+print(output)
 
-# # With tensorflow
-# model = tf.keras.Sequential()
-# model.add(tf.keras.Input(shape=(2,)))
-# model.add(tf.keras.layers.Dense(2))
-# model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
+# With tensorflow
+model = tf.keras.Sequential()
+model.add(tf.keras.Input(shape=(2,)))
+model.add(tf.keras.layers.Dense(2))
+model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
-# model.compile(optimizer="adam", loss=tf.keras.losses.BinaryCrossentropy())
-# model.fit(X, t_XOR, epochs=100)
-# pred = model.predict(X)
+model.compile(optimizer="adam", loss=tf.keras.losses.BinaryCrossentropy())
+model.fit(X, t_XOR, epochs=100)
+pred = model.predict(X)
 
-# print("Tensorflow")
-# print(pred)
+print("Tensorflow")
+print(pred)

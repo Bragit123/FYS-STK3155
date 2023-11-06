@@ -104,7 +104,7 @@ class FFNN:
 
         batch_size = X.shape[0] // batches
 
-        X, t = resample(X, t, replace=False)
+        X, t = resample(X, t, replace=True)
         cost_func_train = self.cost_func(t)
 
         # Create schedulers for each weight matrix
