@@ -17,13 +17,13 @@ class FFNN:
         self.seed = seed
         self.schedulers_weight = list()
         self.schedulers_bias = list()
-        
+
         self.weights = list()
         self.a_matrices = list()
         self.z_matrices = list()
 
         self.reset_weights()
-    
+
     def reset_weights(self):
         np.random.seed(self.seed)
         n_layers = len(self.dimensions)
@@ -34,7 +34,7 @@ class FFNN:
             weight_arr = np.random.normal(size=weight_shape)
             weight_arr[0,:] = np.random.normal(size=self.dimensions[i + 1]) * 0.01 # Bias
             self.weights.append(weight_arr)
-    
+
     def predict(self, X):
         res = self.feedforward(X)
         return res
@@ -55,9 +55,9 @@ class FFNN:
 
             self.z_matrices.append(z)
             self.a_matrices.append(a)
-        
+
         return a
-    
+
     def backpropagate(self, X, t, lam):
         cost = self.cost_func(t)
         act = self.act_func
@@ -75,7 +75,7 @@ class FFNN:
                 wdelta = self.weights[i + 1][1:, :] @ delta_matrix.T
                 dact = grad_act(self.z_matrices[i + 1])
                 delta_matrix = wdelta.T * dact
-            
+
             # Calculate gradient
             grad_weights = self.a_matrices[i].T @ delta_matrix
             grad_bias = np.sum(delta_matrix, axis=0).reshape(1, delta_matrix.shape[1])
@@ -91,8 +91,8 @@ class FFNN:
                 ]
             )
             # Update weights and bias
-            self.weights[i] -= update_matrix 
-    
+            self.weights[i] -= update_matrix
+
     def train(self, X, t, scheduler, batches=1, epochs=100, lam=0):
         np.random.seed(self.seed)
 
@@ -115,7 +115,7 @@ class FFNN:
         for i in range(len(self.weights)):
             self.schedulers_weight.append(copy(scheduler))
             self.schedulers_bias.append(copy(scheduler))
-        
+
         print(f"{scheduler.__class__.__name__}: Eta={scheduler.eta}, Lambda={lam}")
 
         try:
@@ -128,10 +128,10 @@ class FFNN:
                     else:
                         X_batch = X[i * batch_size : (i + 1) * batch_size, :]
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
-                    
+
                     self.feedforward(X_batch)
                     self.backpropagate(X_batch, t_batch, lam)
-                
+
                 # Reset schedulers for each epoch
                 for scheduler in self.schedulers_weight:
                     scheduler.reset()

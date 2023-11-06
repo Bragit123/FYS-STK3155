@@ -26,7 +26,7 @@ class Constant(Scheduler):
 
     def update_change(self, gradient):
         return self.eta * gradient
-    
+
     def reset(self):
         pass
 
@@ -126,6 +126,35 @@ class Adam(Scheduler):
         second_corrected = self.second / (1 - self.rho2**self.n_epochs)
 
         return self.eta * moment_corrected / (jnp.sqrt(second_corrected + delta))
+
+    def reset(self):
+        self.n_epochs += 1
+        self.moment = 0
+        self.second = 0
+
+class AdamMomentum(Scheduler):
+    def __init__(self, eta, rho, rho2, momentum):
+        super().__init__(eta)
+        self.rho = rho
+        self.rho2 = rho2
+        self.momentum = momentum
+        self.moment = 0
+        self.second = 0
+        self.n_epochs = 1
+        self.change = 0
+
+
+    def update_change(self, gradient):
+        delta = 1e-8  # avoid division ny zero
+
+        self.moment = self.rho * self.moment + (1 - self.rho) * gradient
+        self.second = self.rho2 * self.second + (1 - self.rho2) * gradient * gradient
+
+        moment_corrected = self.moment / (1 - self.rho**self.n_epochs)
+        second_corrected = self.second / (1 - self.rho2**self.n_epochs)
+
+        self.change = self.change*self.momentum +self.eta * moment_corrected / (jnp.sqrt(second_corrected + delta))
+        return self.change
 
     def reset(self):
         self.n_epochs += 1

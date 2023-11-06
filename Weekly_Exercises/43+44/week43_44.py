@@ -11,7 +11,6 @@ from copy import copy
 # from sklearn.neural_network import MLPClassifier
 # import tensorflow as tf
 
-eta = 0.1
 rho = 0.9
 rho2 = 0.999
 scheduler = Constant(eta)

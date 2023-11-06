@@ -1,18 +1,11 @@
-import math
-import autograd.numpy as np
-import sys
-import warnings
-from autograd import grad, elementwise_grad
-from random import random, seed
-from copy import deepcopy, copy
-from typing import Tuple, Callable
-from sklearn.utils import resample
-from scheduler import *
-from funcs import *
+import numpy as np
+from typing import Callable
+import jax.numpy as jnp
+from jax import grad, jit, vmap, random
+from GradientDescentSolver import *
 
-warnings.simplefilter("error")
-
-
+key = random.PRNGKey(456)
+#Code taken from exercises
 class FFNN:
     """
     Description:
@@ -53,10 +46,10 @@ class FFNN:
         self.schedulers_bias = list()
         self.a_matrices = list()
         self.z_matrices = list()
-        self.classification = False #None
+        self.classification = None
 
         self.reset_weights()
-        #self._set_classification()
+        self._set_classification()
 
     def fit(
         self,
@@ -121,7 +114,7 @@ class FFNN:
 
         batch_size = X.shape[0] // batches
 
-        X, t = resample(X, t, replace = False)
+        X, t = resample(X, t)
 
         # this function returns a function valued only at X
         cost_function_train = self.cost_func(t)
@@ -141,8 +134,8 @@ class FFNN:
                     # allows for minibatch gradient descent
                     if i == batches - 1:
                         # If the for loop has reached the last batch, take all thats left
-                        X_batch = X[i * batch_size :]
-                        t_batch = t[i * batch_size :]
+                        X_batch = X[i * batch_size :, :]
+                        t_batch = t[i * batch_size :, :]
                     else:
                         X_batch = X[i * batch_size : (i + 1) * batch_size, :]
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
@@ -240,12 +233,11 @@ class FFNN:
         """
 
         predict = self._feedforward(X)
+
         if self.classification:
-             print("Classifying!")
-             return np.where(predict > threshold, 1, 0)
-         else:
-             return predict
-        return predict
+            return np.where(predict > threshold, 1, 0)
+        else:
+            return predict
 
     def reset_weights(self):
         """
