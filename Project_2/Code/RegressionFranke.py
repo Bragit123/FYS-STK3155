@@ -4,6 +4,42 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from random import random, seed
+import jax.numpy as jnp
+import pandas as pd
+import seaborn as sns
+from NN import FFNN
+from scheduler import Constant, Adam
+from funcs import CostCrossEntropy, sigmoid, CostLogReg, CostOLS
+from copy import copy
+
+
+def f(x):
+    return 4.*x**2 + 3.*x + 6.
+x = np.linspace(0,1,4)
+x = x.reshape(len(x),1)
+target = f(x)
+
+rho = 0.9
+rho2 = 0.999
+eta = 0.01
+scheduler = Adam(eta, rho, rho2)
+dim = (1, 5, 1)
+
+# Neural = FFNN(dim, act_func=sigmoid, cost_func=CostCrossEntropy, seed=100)
+Neural = FFNN(dim, hidden_act=sigmoid, output_act=identity, cost_func=CostOLS, seed=100)
+
+#output = Neural.predict(x)
+#print("Before backpropagation")
+#print(output)
+
+scores = Neural.train(x, target, scheduler, epochs=100)
+
+output = Neural.predict(x)
+print("After backpropagation")
+print(output,target)
+plt.plot(x,target)
+plt.plot(x,output)
+plt.show()
 
 ## Making the Franke function. This part is largely copied from the projection description
 fig = plt.figure()
@@ -34,6 +70,47 @@ plt.savefig("../Figures/franke_function.pdf")
 
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
-x, y = np.meshgrid(x,y)
-z = Frankefunction(x,y)
 X = np.array([x,y]).T
+x, y = np.meshgrid(x,y)
+target = FrankeFunction(x,y)
+
+rho = 0.9
+rho2 = 0.999
+eta = 0.01
+scheduler = Adam(eta, rho, rho2)
+dim = (2, 5, 1)
+
+# Neural = FFNN(dim, act_func=sigmoid, cost_func=CostCrossEntropy, seed=100)
+Neural = FFNN(dim, act_func=sigmoid, cost_func=CostOLS, seed=100)
+
+output = Neural.predict(X)
+print("Before backpropagation")
+print(output)
+
+scores = Neural.train(X, target, scheduler, epochs=1000)
+
+output = Neural.predict(X)
+print("After backpropagation")
+print(output-target)
+
+
+surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+turf = ax.plot_surface(x,y,output,cmap=cm.coolwarm, linewidth=0, antialiased=False)
+ax.set_zlim(-0.10, 1.40)
+ax.zaxis.set_major_locator(LinearLocator(10))
+ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+fig.colorbar(surf, shrink=0.5, aspect=5)
+plt.show()
+#plt.savefig("../Figures/franke_function.pdf")
+# print("Scores")
+# print(scores)
+epochs = np.arange(len(scores["train_errors"]))
+plt.plot(epochs, scores["train_errors"])
+plt.show()
+
+err0 = scores["train_errors"][0]
+err1 = scores["train_errors"][-1]
+costf = CostCrossEntropy(target)
+cost = costf(output)
+print(f"cost = {cost}")
+print(f"err0 = {err0} ; err1 = {err1}")

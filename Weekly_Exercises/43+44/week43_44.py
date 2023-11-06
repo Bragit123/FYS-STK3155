@@ -6,19 +6,10 @@ import pandas as pd
 import seaborn as sns
 from NN import FFNN
 from scheduler import Constant, Adam
-<<<<<<< HEAD
-from funcs import *
-from copy import copy
-from sklearn.neural_network import MLPClassifier
-#import tensorflow as tf
-
-eta = 0.001
-=======
 from funcs import CostCrossEntropy, sigmoid, CostLogReg
 from copy import copy
 # from sklearn.neural_network import MLPClassifier
 # import tensorflow as tf
->>>>>>> f6aaeba63fd1473e4610a7a7b1b348a752da525f
 
 rho = 0.9
 rho2 = 0.999
@@ -44,11 +35,7 @@ output = Neural.predict(X)
 print("Before backpropagation")
 print(output)
 
-<<<<<<< HEAD
-scores = Neural.train(X, t_XOR, scheduler, epochs=1000, lam = 0.01)
-=======
 scores = Neural.train(X, t_XOR, scheduler, epochs=100)
->>>>>>> f6aaeba63fd1473e4610a7a7b1b348a752da525f
 
 output = Neural.predict(X)
 print("After backpropagation")
@@ -85,10 +72,5 @@ print(f"err0 = {err0} ; err1 = {err1}")
 # model.fit(X, t_XOR, epochs=100)
 # pred = model.predict(X)
 
-<<<<<<< HEAD
-print("Tensorflow")
-print(pred)
-=======
 # print("Tensorflow")
 # print(pred)
->>>>>>> f6aaeba63fd1473e4610a7a7b1b348a752da525f
