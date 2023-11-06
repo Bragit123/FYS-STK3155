@@ -11,9 +11,10 @@ from sklearn.utils import resample
 from copy import copy
 
 class FFNN:
-    def __init__(self, dimensions, act_func, cost_func, seed=100):
+    def __init__(self, dimensions, hidden_act, output_act, cost_func, seed=100, classification = False):
         self.dimensions = dimensions
-        self.act_func = act_func
+        self.hidden_act = hidden_act
+        self.output_act = output_act
         self.cost_func = cost_func
         self.seed = seed
         self.schedulers_weight = list()
@@ -22,6 +23,7 @@ class FFNN:
         self.weights = list()
         self.a_matrices = list()
         self.z_matrices = list()
+        self.classification = classification
 
         self.reset_weights()
     
@@ -52,7 +54,11 @@ class FFNN:
         for l in range(len(self.weights)):
             w_mat = self.weights[l]
             z = a @ w_mat[1:,:] + w_mat[0,:]
-            a = self.act_func(z)
+
+            if l == len(self.weights) - 1:
+                a = self.output_act(z)
+            else:
+                a = self.hidden_act(z)
 
             self.z_matrices.append(z)
             self.a_matrices.append(a)
@@ -61,20 +67,22 @@ class FFNN:
     
     def backpropagate(self, X, t, lam):
         cost = self.cost_func(t)
-        act = self.act_func
+        act_hidden = self.hidden_act
+        act_output = self.output_act
         grad_cost = grad(cost)
-        grad_act = vmap(vmap(grad(act)))
+        grad_act_hidden = vmap(vmap(grad(act_hidden)))
+        grad_act_output = vmap(vmap(grad(act_output)))
 
         for i in range(len(self.weights) - 1, -1, -1):
             # Output layer:
             if i == len(self.weights) - 1:
-                dact = grad_act(self.z_matrices[i+1])
+                dact = grad_act_output(self.z_matrices[i+1])
                 dcost = grad_cost(self.a_matrices[i+1])
                 delta_matrix = dact * dcost
             # Hidden layers:
             else:
                 wdelta = self.weights[i + 1][1:, :] @ delta_matrix.T
-                dact = grad_act(self.z_matrices[i + 1])
+                dact = grad_act_hidden(self.z_matrices[i + 1])
                 delta_matrix = wdelta.T * dact
             
             # Calculate gradient
