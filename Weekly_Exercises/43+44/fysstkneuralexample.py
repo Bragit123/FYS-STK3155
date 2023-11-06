@@ -106,6 +106,19 @@ print(probabilities)
 predictions = predict(X)
 print(predictions)
 
+"""
+This is printed
+[[0.682327   0.18959704]
+ [0.6475749  0.0886116 ]
+ [0.51279813 0.22406313]
+ [0.49386448 0.10197075]]
+[0 0 0 0]
+[[0.56029314]
+ [0.54989004]
+ [0.50714725]
+ [0.50267553]]
+[0 0 0 0]
+"""
 #Setting up the cost function
 def CostCrossEntropy(target):
 
@@ -318,7 +331,27 @@ a_h,z_o,z_h,predictions = feed_forward(X)
 print("OR result after training")
 print(predictions)
 
-#Scikit-learn
+"""
+This is printed:
+XOR result after training
+[[0.3810692 ]
+ [0.72440636]
+ [0.5092442 ]
+ [0.33481285]]
+AND result after training
+[[0.00422943]
+ [0.04162741]
+ [0.03942365]
+ [0.9093416 ]]
+OR result after training
+[[0.07799514]
+ [0.96366006]
+ [0.96375   ]
+ [0.993749  ]]
+"""
+
+
+#Scikit-learn, code taken from lecture notes
 # Design matrix
 X = np.array([ [0, 0], [0, 1], [1, 0],[1, 1]],dtype=np.float64)
 
@@ -365,4 +398,5 @@ sns.heatmap(test_accuracy, annot=True, ax=ax, cmap="viridis")
 ax.set_title("Test Accuracy")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
+plt.savefig("scikit.png")
 plt.show()

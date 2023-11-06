@@ -53,10 +53,10 @@ class FFNN:
         self.schedulers_bias = list()
         self.a_matrices = list()
         self.z_matrices = list()
-        self.classification = None
+        self.classification = False #None
 
         self.reset_weights()
-        self._set_classification()
+        #self._set_classification()
 
     def fit(
         self,
@@ -97,7 +97,7 @@ class FFNN:
 
         """
 
-        # setup 
+        # setup
         if self.seed is not None:
             np.random.seed(self.seed)
 
@@ -121,7 +121,7 @@ class FFNN:
 
         batch_size = X.shape[0] // batches
 
-        X, t = resample(X, t)
+        X, t = resample(X, t, replace = False)
 
         # this function returns a function valued only at X
         cost_function_train = self.cost_func(t)
@@ -141,8 +141,8 @@ class FFNN:
                     # allows for minibatch gradient descent
                     if i == batches - 1:
                         # If the for loop has reached the last batch, take all thats left
-                        X_batch = X[i * batch_size :, :]
-                        t_batch = t[i * batch_size :, :]
+                        X_batch = X[i * batch_size :]
+                        t_batch = t[i * batch_size :]
                     else:
                         X_batch = X[i * batch_size : (i + 1) * batch_size, :]
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
@@ -163,7 +163,7 @@ class FFNN:
 
                 train_errors[e] = train_error
                 if val_set:
-                    
+
                     pred_val = self.predict(X_val)
                     val_error = cost_function_val(pred_val)
                     val_errors[e] = val_error
