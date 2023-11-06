@@ -241,9 +241,11 @@ class FFNN:
 
         predict = self._feedforward(X)
         if self.classification:
-            return np.where(predict > threshold, 1, 0)
-        else:
-            return predict
+             print("Classifying!")
+             return np.where(predict > threshold, 1, 0)
+         else:
+             return predict
+        return predict
 
     def reset_weights(self):
         """
