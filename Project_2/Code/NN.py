@@ -102,7 +102,7 @@ class FFNN:
                 ]
             )
             # Update weights and bias
-            self.weights[i] -= update_matrix 
+            self.weights[i] -= update_matrix
     
     def train(self, X, t, scheduler, batches=1, epochs=100, lam=0):
         np.random.seed(self.seed)
@@ -152,8 +152,11 @@ class FFNN:
                 # Computing performance metrics
                 pred_train = self.predict(X)
                 train_error = cost_func_train(pred_train)
-
                 train_errors[e] = train_error
+                
+                if self.classification == True:
+                    train_accuracy = np.mean(pred_train == t)
+                    train_accs[e] = train_accuracy
 
                 progression = e / epochs
                 print(f"Progress: {progression*100:.0f}%", end="\r")
@@ -164,5 +167,8 @@ class FFNN:
         # Return performance metrics for the entire run
         scores = dict()
         scores["train_errors"] = train_errors
+        
+        if self.classification == True:
+            scores["train_accs"] = train_accs
 
         return scores
