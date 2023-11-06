@@ -6,7 +6,6 @@ https://compphysics.github.io/MachineLearning/doc/LectureNotes/_build/html/exerc
 """
 import numpy as np
 from jax import grad, jacobian, vmap
-# from autograd import grad, elementwise_grad
 from sklearn.utils import resample
 from copy import copy
 
@@ -40,7 +39,10 @@ class FFNN:
     
     def predict(self, X):
         res = self.feedforward(X)
-        return res
+        if self.classification == True:
+            return np.where(res > 0.5, 1, 0)
+        else:
+            return res
 
     def feedforward(self, X):
         # Reset matrices
