@@ -82,20 +82,11 @@ class FFNN:
                 dact = grad_act_output(self.z_matrices[i+1])
                 dcost = grad_cost(self.a_matrices[i+1])
                 delta_matrix = dact * dcost
-                # print("--------OUTPUT LAYER--------")
-                # print("z_matrix")
-                # print(self.z_matrices[i+1])
-                # print("DACT")
-                # print(dact)
+            
             # Hidden layers:
             else:
                 wdelta = self.weights[i + 1][1:, :] @ delta_matrix.T
                 dact = grad_act_hidden(self.z_matrices[i + 1])
-                # print("--------HIDDEN LAYER--------")
-                # print("z_matrix")
-                # print(self.z_matrices[i+1])
-                # print("DACT")
-                # print(dact)
                 delta_matrix = wdelta.T * dact
             
             # Calculate gradient
@@ -113,12 +104,10 @@ class FFNN:
                 ]
             )
 
-            # print("--------UPDATE MATRIX--------")
-            # print(update_matrix)
             # Update weights and bias
             self.weights[i] -= update_matrix
 
-    def train(self, X, t, scheduler, batches=1, epochs=100, lam=0):
+    def train(self, X, t, scheduler, batches=1, epochs=100, lam=0, X_val = None, t_val = None):
         np.random.seed(self.seed)
 
         # Creating arrays for score metrics
@@ -127,14 +116,28 @@ class FFNN:
 
         train_accs = np.empty(epochs)
         train_accs.fill(np.nan)
+        
+        if X_val is not None:
+            val_errors = np.empty(epochs)
+            val_errors.fill(np.nan)
 
+            val_accs = np.empty(epochs)
+            val_accs.fill(np.nan)
+
+        # Create empty lists for schedulers
         self.schedulers_weight = list()
         self.schedulers_bias = list()
 
+        # Compute number of batches
         batch_size = X.shape[0] // batches
 
+        # Resample training data
         X, t = resample(X, t, replace=False)
+        
+        # Find cost functions
         cost_func_train = self.cost_func(t)
+        if X_val is not None:
+            cost_func_val = self.cost_func(t_val)
 
         # Create schedulers for each weight matrix
         for i in range(len(self.weights)):
@@ -144,6 +147,7 @@ class FFNN:
         print(f"{scheduler.__class__.__name__}: Eta={scheduler.eta}, Lambda={lam}")
 
         try:
+            ## Train the neural network
             for e in range(epochs):
                 for i in range(batches):
                     if i == batches - 1:
@@ -167,6 +171,13 @@ class FFNN:
                 pred_train = self.predict(X)
                 train_error = cost_func_train(pred_train)
                 train_errors[e] = train_error
+
+                if X_val is not None:
+                    pred_val = self.predict(X_val)
+                    val_errors[e] = cost_func_val(pred_val)
+                    if self.classification == True:
+                        val_accuracy = np.mean(pred_val == t_val)
+                        val_accs[e] = val_accuracy
                 
                 if self.classification == True:
                     train_accuracy = np.mean(pred_train == t)
@@ -176,6 +187,7 @@ class FFNN:
                 print(f"Progress: {progression*100:.0f}%", end="\r")
 
         except KeyboardInterrupt:
+            ## Allow training to be aborted by keypress
             pass
 
         # Return performance metrics for the entire run
