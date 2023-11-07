@@ -19,14 +19,14 @@ class FFNN:
         self.seed = seed
         self.schedulers_weight = list()
         self.schedulers_bias = list()
-        
+
         self.weights = list()
         self.a_matrices = list()
         self.z_matrices = list()
         self.classification = classification
 
         self.reset_weights()
-    
+
     def reset_weights(self):
         np.random.seed(self.seed)
         n_layers = len(self.dimensions)
@@ -37,7 +37,7 @@ class FFNN:
             weight_arr = np.random.normal(size=weight_shape)
             weight_arr[0,:] = np.random.normal(size=self.dimensions[i + 1]) * 0.01 # Bias
             self.weights.append(weight_arr)
-    
+
     def predict(self, X):
         res = self.feedforward(X)
         if self.classification == True:
@@ -65,9 +65,9 @@ class FFNN:
 
             self.z_matrices.append(z)
             self.a_matrices.append(a)
-        
+
         return a
-    
+
     def backpropagate(self, X, t, lam):
         cost = self.cost_func(t)
         act_hidden = self.hidden_act
@@ -82,13 +82,13 @@ class FFNN:
                 dact = grad_act_output(self.z_matrices[i+1])
                 dcost = grad_cost(self.a_matrices[i+1])
                 delta_matrix = dact * dcost
-            
+
             # Hidden layers:
             else:
                 wdelta = self.weights[i + 1][1:, :] @ delta_matrix.T
                 dact = grad_act_hidden(self.z_matrices[i + 1])
                 delta_matrix = wdelta.T * dact
-            
+
             # Calculate gradient
             grad_weights = self.a_matrices[i].T @ delta_matrix
             grad_bias = np.sum(delta_matrix, axis=0).reshape(1, delta_matrix.shape[1])
@@ -116,13 +116,17 @@ class FFNN:
 
         train_accs = np.empty(epochs)
         train_accs.fill(np.nan)
-        
+        val_set = False
         if X_val is not None:
+            val_set = True
+
+        if val_set:
             val_errors = np.empty(epochs)
             val_errors.fill(np.nan)
 
             val_accs = np.empty(epochs)
             val_accs.fill(np.nan)
+
 
         # Create empty lists for schedulers
         self.schedulers_weight = list()
@@ -133,17 +137,17 @@ class FFNN:
 
         # Resample training data
         X, t = resample(X, t, replace=False)
-        
+
         # Find cost functions
         cost_func_train = self.cost_func(t)
-        if X_val is not None:
+        if val_set:
             cost_func_val = self.cost_func(t_val)
 
         # Create schedulers for each weight matrix
         for i in range(len(self.weights)):
             self.schedulers_weight.append(copy(scheduler))
             self.schedulers_bias.append(copy(scheduler))
-        
+
         print(f"{scheduler.__class__.__name__}: Eta={scheduler.eta}, Lambda={lam}")
 
         try:
@@ -157,10 +161,10 @@ class FFNN:
                     else:
                         X_batch = X[i * batch_size : (i + 1) * batch_size, :]
                         t_batch = t[i * batch_size : (i + 1) * batch_size, :]
-                    
+
                     self.feedforward(X_batch)
                     self.backpropagate(X_batch, t_batch, lam)
-                
+
                 # Reset schedulers for each epoch
                 for scheduler in self.schedulers_weight:
                     scheduler.reset()
@@ -172,13 +176,13 @@ class FFNN:
                 train_error = cost_func_train(pred_train)
                 train_errors[e] = train_error
 
-                if X_val is not None:
+                if val_set:
                     pred_val = self.predict(X_val)
                     val_errors[e] = cost_func_val(pred_val)
                     if self.classification == True:
                         val_accuracy = np.mean(pred_val == t_val)
                         val_accs[e] = val_accuracy
-                
+
                 if self.classification == True:
                     train_accuracy = np.mean(pred_train == t)
                     train_accs[e] = train_accuracy
@@ -192,9 +196,16 @@ class FFNN:
 
         # Return performance metrics for the entire run
         scores = dict()
+
         scores["train_errors"] = train_errors
-        
-        if self.classification == True:
+
+        if val_set:
+            scores["val_errors"] = val_errors
+
+        if self.classification:
             scores["train_accs"] = train_accs
+
+            if val_set:
+                scores["val_accs"] = val_accs
 
         return scores

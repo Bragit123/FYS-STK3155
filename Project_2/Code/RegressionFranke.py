@@ -83,6 +83,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
 #Calculating MSE
@@ -95,18 +96,20 @@ lmbds = np.logspace(-4,0,5)
 MSE = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
     for j in range(len(lmbds)):
-        scheduler = AdamMomentum(eta[i], rho, rho2, momentum = momentum)
+        scheduler = AdamMomentum(etas[i], rho, rho2, momentum = momentum)
         Neural = FFNN(dim, hidden_act=sigmoid, output_act=identity, cost_func=CostOLS, seed=100)
         #output = Neural.predict(X_train) #before backprop
-        scores = Neural.train(X_train, t_train, scheduler, batches=20, epochs=100, lam=lmbds[i], X_test, t_test)
-        MSE[i,j] = scores["val_errors"]
+        scores = Neural.train(X_train, t_train, scheduler, batches=20, epochs=100, lam=lmbds[i], X_val = X_test, t_val = t_test)
+        MSE[i,j] = scores["val_errors"][-1]
 
 fig, ax = plt.subplots(figsize = (10, 10))
 sns.heatmap(test_accuracy, annot=True, ax=ax, cmap="viridis")
 ax.set_title("Test Accuracy")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
+plt.savefig("MSE,Franke,sigmoid.pdf")
 plt.show()
+
 
 
 x = np.arange(0, 1, 0.05)
