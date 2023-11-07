@@ -7,6 +7,7 @@ for automatic differentiation.
 """
 
 import jax.numpy as jnp
+from jax import grad
 
 def CostOLS(target):
     
@@ -60,21 +61,21 @@ def LRELU(X):
     return jnp.where(X > jnp.zeros(X.shape), X, delta * X)
 
 
-# def derivate(func):
-#     if func.__name__ == "RELU":
+def derivate(func):
+    if func.__name__ == "RELU":
 
-#         def func(X):
-#             return jnp.where(X > 0, 1, 0)
+        def func(X):
+            return jnp.where(X > 0, 1, 0)
 
-#         return func
+        return func
 
-#     elif func.__name__ == "LRELU":
+    elif func.__name__ == "LRELU":
 
-#         def func(X):
-#             delta = 10e-4
-#             return jnp.where(X > 0, 1, delta)
+        def func(X):
+            delta = 10e-4
+            return jnp.where(X > 0, 1, delta)
 
-#         return func
+        return func
 
-#     else:
-#         return elementwise_grad(func)
+    else:
+        return grad(func)
