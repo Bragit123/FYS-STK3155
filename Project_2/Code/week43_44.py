@@ -8,6 +8,7 @@ from NN import FFNN
 from scheduler import Constant, Adam
 from funcs import CostCrossEntropy, sigmoid, CostLogReg
 from copy import copy
+
 # from sklearn.neural_network import MLPClassifier
 # import tensorflow as tf
 
