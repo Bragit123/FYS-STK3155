@@ -11,6 +11,7 @@ from NN import FFNN
 from scheduler import *
 from funcs import *
 from copy import copy
+from sklearn.model_selection import train_test_split
 
 """
 def f(x):
@@ -72,36 +73,77 @@ ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.savefig("../Figures/franke_function.pdf")
 
+
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
-X = np.array([x,y]).T
 x, y = np.meshgrid(x,y)
-target = FrankeFunction(x,y)
+x_shape = x.shape
+y_shape = y.shape
+x = x.flatten()
+y = y.flatten()
+X = np.array([x.flatten(),y.flatten()]).T
+target = FrankeFunction(x.flatten(),y.flatten())
+target = target.reshape((len(target),1))
+X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
+#Adam parameters
+#Calculating MSE
+rho = 0.9
+rho2 = 0.999
+momentum = 0.01
+dim = (2, 50, 1)
+etas = np.logspace(-4,0,5)
+lmbds = np.logspace(-4,0,5)
+MSE = np.zeros((len(etas),len(lmbds)))
+for i in range(len(etas)):
+    for j in range(len(lmbds)):
+        scheduler = AdamMomentum(etas[i], rho, rho2, momentum = momentum)
+        Neural = FFNN(dim, hidden_act=sigmoid, output_act=identity, cost_func=CostOLS, seed=100)
+        #output = Neural.predict(X_train) #before backprop
+        scores = Neural.train(X_train, t_train, scheduler, batches=20, epochs=100, lam=lmbds[i], X_val = X_test, t_val = t_test)
+        MSE[i,j] = scores["val_errors"][-1]
+
+fig, ax = plt.subplots(figsize = (10, 10))
+sns.heatmap(test_accuracy, annot=True, ax=ax, cmap="viridis")
+ax.set_title("Test Accuracy")
+ax.set_ylabel("$\eta$")
+ax.set_xlabel("$\lambda$")
+plt.savefig("MSE,Franke,sigmoid.pdf")
+plt.show()
+
+
+
+x = np.arange(0, 1, 0.05)
+y = np.arange(0, 1, 0.05)
+x, y = np.meshgrid(x,y)
+x_shape = x.shape
+y_shape = y.shape
+x = x.flatten()
+y = y.flatten()
+X = np.array([x.flatten(),y.flatten()]).T
+target = FrankeFunction(x.flatten(),y.flatten())
+target_shape = target.shape
+target = target.reshape((len(target),1))
 
 rho = 0.9
 rho2 = 0.999
-
-# Best sklearn
 eta=0.1
 scheduler = AdamMomentum(eta, rho, rho2, momentum = 0.01)
 dim = (2, 50, 1)
 
-# Neural = FFNN(dim, act_func=sigmoid, cost_func=CostCrossEntropy, seed=100)
 Neural = FFNN(dim, hidden_act=sigmoid, output_act=identity, cost_func=CostOLS, seed=100)
 
-output = Neural.predict(X)
-print("Before backpropagation")
-print(output)
+#output = Neural.predict(X_train) #before backprop
 
-scores = Neural.train(X, target, scheduler, batches=10, epochs=100, lam=1e-5)
+scores = Neural.train(X, t, scheduler, batches=20, epochs=100, lam=1e-5)
 
-output = Neural.predict(X)
-print("After backpropagation")
-print(output-target)
 
+output = Neural.predict(X) #After backprop
+
+output = output.reshape(x_shape)
+#print(output.shape)
 
 surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-turf = ax.plot_surface(x,y,output,cmap=cm.coolwarm, linewidth=0, antialiased=False)
+turf = ax.plot_surface(x, y, output,cmap=cm.coolwarm, linewidth=0, antialiased=False)
 ax.set_zlim(-0.10, 1.40)
 ax.zaxis.set_major_locator(LinearLocator(10))
 ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
