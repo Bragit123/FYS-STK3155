@@ -14,7 +14,7 @@ def plot(x_list, y_list, labels, title, xlabel, ylabel, filename):
         y_list = [y_list]
     if type(labels) == str:
         labels = [labels]
-    
+
     plt.figure()
     plt.title(title, fontsize=label_size)
     plt.xlabel(xlabel, fontsize=label_size)
@@ -24,7 +24,7 @@ def plot(x_list, y_list, labels, title, xlabel, ylabel, filename):
 
     for x, y, label in zip(x_list, y_list, labels):
         plt.plot(x, y, label=label)
-    
+
     plt.legend(fontsize=label_size)
     plt.savefig(filename, bbox_inches='tight')
 
@@ -35,8 +35,8 @@ def heatmap(data, xticks, yticks, title, xlabel, ylabel, filename):
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.yticks(fontsize=label_size)
-    ax.xticks(fontsize=label_size)
+    plt.yticks(fontsize=label_size)
+    plt.xticks(fontsize=label_size)
     plt.savefig(filename, bbox_inches='tight')
 
 ## Søyleplot

@@ -62,24 +62,8 @@ for i in range(len(eta_vals)):
         MSE[i,j] = sklearn.metrics.mean_squared_error(t_test,test_pred)
         R2[i,j] = sklearn.metrics.r2_score(t_test, test_pred)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=ax, cmap="viridis")
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/ScikitMSErelu.pdf")
-plt.show()
-
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=ax, cmap="viridis")
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/ScikitR2relu.pdf")
-plt.show()
-
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/ScikitMSErelu.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/ScikitR2relu.pdf")
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSErelu.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2relu.pdf")
 
 #sigmoid
 # Defining the neural network
@@ -96,7 +80,7 @@ epochs = 100
 
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals):
-        dnn = MLPRegressor(hidden_layer_sizes=(n_hidden_neurons), activation="relu", solver="adam",
+        dnn = MLPRegressor(hidden_layer_sizes=(n_hidden_neurons), activation="logistic", solver="adam",
                             alpha=lmbd, learning_rate_init=eta, max_iter=epochs,batch_size=5, momentum=0.01)
         dnn.fit(X_train, t_train)
         DNN_scikit[i][j] = dnn
@@ -115,5 +99,5 @@ for i in range(len(eta_vals)):
         MSE[i,j] = sklearn.metrics.mean_squared_error(t_test,test_pred)
         R2[i,j] = sklearn.metrics.r2_score(t_test, test_pred)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/ScikitMSErelu.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/ScikitR2relu.pdf")
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSEsigmoid.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2sigmoid.pdf")

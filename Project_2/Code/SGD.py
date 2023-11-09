@@ -64,24 +64,26 @@ plt.plot(x,y_OLS, label="Fit with OLS")
 def CostRidge(beta,y,X,lmb):
     return jnp.sum((y-X @ beta)**2) + jnp.sum(lmb*beta**2)
 
-n_iter=100
+n_iter = 100
+M = 5  #Batch size
+n_epochs = n_iter
 ##Testing different etas and lambdas
-eta_vals = np.logspace(-3,0,4)
-lmbd_vals = np.logspace(-4,0,5)
+eta_vals = np.logspace(-3,-1,3)
+lmbd_vals = np.logspace(-3,-1,3)
 
 grad_func = grad(CostRidge)
 MSE = np.zeros((len(eta_vals), len(lmbd_vals)))
 R2 = np.zeros((len(eta_vals), len(lmbd_vals)))
 for i in range(len(eta_vals)):
     for j in range(len(lmbd_vals)):
-        scheduler = AdamMomentum(eta=eta_vals[i], rho=0.9, rho2=0.999, momentum=0.001)
-        beta = gd(n_iter,scheduler, grad_func, lmbd_vals[i])
-        y_adam_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
-        MSE[i,j] = sklearn.metrics.mean_squared_error(y_test,y_adam_mom)
-        R2[i,j] = sklearn.metrics.r2_score(y_test, y_adam_mom)
+        scheduler = Momentum(eta=eta_vals[i], momentum=0.001)
+        beta = SGD(M, n_epochs, scheduler, grad_func, lmbd_vals[j])
+        y_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
+        MSE[i,j] = sklearn.metrics.mean_squared_error(y_test,y_mom)
+        R2[i,j] = sklearn.metrics.r2_score(y_test, y_mom)
 
-heatmap(MSE, xticks=lmbd_vals, yticks=eta_vals, title="MSE test, Adam with momentum", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/GDMSEAdam.pdf")
-heatmap(R2, xticks=lmbd_vals, yticks=eta_vals, title="R2-score, Adam with momentum", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/GDR2Adam.pdf")
+heatmap(MSE, xticks=lmbd_vals, yticks=eta_vals, title="MSE test, SGD with momentum", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/GDMSEmom.pdf")
+heatmap(R2, xticks=lmbd_vals, yticks=eta_vals, title="R2-score, SGD with momentum", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/GDR2mom.pdf")
 
 #OLS as cost function
 MSEs = np.zeros(16) #16 methods to be tested

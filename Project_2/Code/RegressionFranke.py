@@ -108,8 +108,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, sigmoid", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,sigmoid.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,sigmoid.pdf")
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,sigmoid.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\lamdba$", ylabel="$\eta$", filename="../Figures/R2,Franke,sigmoid.pdf")
 
 #Calculating MSE, R2, RELU
 x = np.arange(0, 1, 0.05)
@@ -143,8 +143,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,RELU.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,RELU.pdf")
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,RELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\lamba$", ylabel="$\eta$", filename="../Figures/R2,Franke,RELU.pdf")
 
 
 
@@ -180,8 +180,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, LRELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,LRELU.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, LRELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,LRELU.pdf")
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,LRELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,LRELU.pdf")
 
 
 #Visualising the fit for parameters we found to give a small MSE
