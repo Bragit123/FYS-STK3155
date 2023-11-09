@@ -13,14 +13,14 @@ import sklearn
 from sklearn.model_selection import train_test_split
 from plotting import *
 
-def gd(n_iter,scheduler,grad_func):
+def gd(n_iter,scheduler,grad_func,lmb=0):
     beta = random.normal(key,shape=(deg+1,1))
     for i in range(n_iter):
-        gradient = grad_func(beta,y_train,X_train)
+        gradient = grad_func(beta,y_train,X_train,lmb)
         beta -= scheduler.update_change(gradient)
     return beta
 
-def SGD(M, n_epochs, scheduler, grad_func):
+def SGD(M, n_epochs, scheduler, grad_func,lmb=0):
     beta = random.normal(key,shape=(deg+1,1))
     m = int(n/M) #number of minibatches
     n_epochs = n_iter
@@ -29,7 +29,7 @@ def SGD(M, n_epochs, scheduler, grad_func):
             random_index = M*random.randint(key,shape=(1,),minval=0,maxval=m)[0]
             Xi = X_train[random_index:random_index+M]
             yi = y_train[random_index:random_index+M]
-            gradient = (1/M)*grad_func(beta,yi,Xi)
+            gradient = (1/M)*grad_func(beta,yi,Xi,lmb)
             beta -= scheduler.update_change(gradient)
     return beta
 
@@ -61,21 +61,39 @@ print(beta_linreg)
 y_OLS = beta_linreg[0] + beta_linreg[1]*x + beta_linreg[2]*x**2
 plt.plot(x,y_OLS, label="Fit with OLS")
 
+def CostRidge(beta,y,X,lmb):
+    return jnp.sum((y-X @ beta)**2) + jnp.sum(lmb*beta**2)
 
+n_iter=100
+##Testing different etas and lambdas
+eta_vals = np.logspace(-3,0,4)
+lmbd_vals = np.logspace(-4,0,5)
+
+grad_func = grad(CostRidge)
+MSE = np.zeros((len(eta_vals), len(lmbd_vals)))
+R2 = np.zeros((len(eta_vals), len(lmbd_vals)))
+for i in range(len(eta_vals)):
+    for j in range(len(lmbd_vals)):
+        scheduler = AdamMomentum(eta=eta_vals[i], rho=0.9, rho2=0.999, momentum=0.001)
+        beta = gd(n_iter,scheduler, grad_func, lmbd_vals[i])
+        y_adam_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
+        MSE[i,j] = sklearn.metrics.mean_squared_error(y_test,y_adam_mom)
+        R2[i,j] = sklearn.metrics.r2_score(y_test, y_adam_mom)
+
+heatmap(MSE, xticks=lmbd_vals, yticks=eta_vals, title="MSE test, Adam with momentum", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/GDMSEAdam.pdf")
+heatmap(R2, xticks=lmbd_vals, yticks=eta_vals, title="R2-score, Adam with momentum", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/GDR2Adam.pdf")
+
+#OLS as cost function
 MSEs = np.zeros(16) #16 methods to be tested
 R2s =  np.zeros(16)
 Names = [""]*16
 #plt.bar(x, height, width=0.8, bottom=None, *, align='center', data=None, **kwargs)[source]
 
 k = 0 #Counter
-def CostOLS(beta,y,X):
+def CostOLS(beta,y,X,lmb=0):
     return jnp.sum((y-X @ beta)**2)
 
-def CostRidge(beta,y,X):
-    return jnp.sum((y-X @ beta)**2) + jnp.sum(lmb*beta**2)
-
 grad_func = grad(CostOLS)
-n_iter=100
 #Constant learning schedule
 scheduler = Constant(eta=0.001)
 beta = gd(n_iter,scheduler,grad_func)
@@ -270,7 +288,7 @@ k += 1
 barplot(Names, MSEs, xlabel = "Method", ylabel = "MSE", title = "MSE error for different GD methods", filename="../Figures/GDMSEcostols.pdf") #We made plotting functions
 barplot(Names, R2s, xlabel = "Method", ylabel = "R2", title = "R2-score for different GD methods", filename="../Figures/GDR2costols.pdf")
 
-
+#Ridge as cost function
 MSEs = np.zeros(16) #16 methods to be tested
 R2s =  np.zeros(16)
 Names = [""]*16
@@ -278,15 +296,12 @@ Names = [""]*16
 
 k = 0 #Counter
 
-def CostRidge(beta,y,X):
-    return jnp.sum((y-X @ beta)**2) + jnp.sum(lmb*beta**2)
-
 grad_func= grad(CostRidge)
-
+lmb = 0.01
 #Constant learning schedule
 
 scheduler = Constant(eta=0.001)
-beta = gd(n_iter,scheduler,grad_func)
+beta = gd(n_iter,scheduler,grad_func,lmb)
 print("beta from GD")
 print(beta)
 y_const_eta = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -297,7 +312,7 @@ k += 1
 
 #Constant learning schedule with momentum
 scheduler = Momentum(eta=0.001, momentum=0.001)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func,lmb)
 print("beta from GD with mom.")
 print(beta)
 y_const_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -310,7 +325,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = n_iter
 scheduler = Constant(eta=0.001)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func,lmb)
 print("beta from SGD")
 print(beta)
 y_SGD = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -323,7 +338,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = 100
 scheduler = Momentum(eta=0.001, momentum=0.001)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func,lmb)
 print("beta from SGD with mom.")
 print(beta)
 y_SGD_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -334,7 +349,7 @@ k += 1
 
 #Adagrad
 scheduler = Adagrad(eta=0.001)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from Adagrad")
 print(beta)
 y_adagrad = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -345,7 +360,7 @@ k += 1
 
 #Adagrad with momentum
 scheduler = AdagradMomentum(eta=0.001, momentum=0.001)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from Adagrad with mom.")
 print(beta)
 y_adagrad_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -358,7 +373,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = n_iter
 scheduler = Adagrad(eta=0.001)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from Adagrad with SGD")
 print(beta)
 y_adagrad_SGD = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -371,7 +386,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = 100
 scheduler = AdagradMomentum(eta=0.001, momentum=0.001)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from Adagrad with SGD and mom.")
 print(beta)
 y_adagrad_SGD_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -382,7 +397,7 @@ k += 1
 
 #RMS-prop
 scheduler = RMS_prop(eta=0.001, rho=0.99)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from RMS-prop")
 print(beta)
 y_rms = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -393,7 +408,7 @@ k += 1
 
 #RMS-prop with momentum
 scheduler = RMS_propMomentum(eta=0.001, rho=0.99, momentum=0.001)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from RMS-prop with mom.")
 print(beta)
 y_rms_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -406,7 +421,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = n_iter
 scheduler = RMS_prop(eta=0.001, rho=0.99)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from RMS-prop with SGD")
 print(beta)
 y_rms_SGD = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -419,6 +434,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = 100
 scheduler = RMS_propMomentum(eta=0.001, rho=0.99, momentum=0.001)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from RMS-prop with SGD and mom.")
 print(beta)
 y_rms_SGD_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -429,7 +445,7 @@ k += 1
 
 #Adam
 scheduler = Adam(eta=0.001, rho=0.9, rho2=0.999)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from Adam")
 print(beta)
 y_adam = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -440,7 +456,7 @@ k += 1
 
 #Adam with momentum
 scheduler = AdamMomentum(eta=0.001, rho=0.9, rho2=0.999, momentum=0.001)
-beta = gd(n_iter,scheduler, grad_func)
+beta = gd(n_iter,scheduler, grad_func, lmb)
 print("beta from Adam with mom.")
 print(beta)
 y_adam_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -453,7 +469,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = n_iter
 scheduler = Adam(eta=0.001, rho=0.9, rho2=0.999)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from Adam with SGD")
 print(beta)
 y_adam_SGD = beta[0] + beta[1]*x_test + beta[2]*x_test**2
@@ -466,7 +482,7 @@ k += 1
 M = 5  #Batch size
 n_epochs = 100
 scheduler = AdamMomentum(eta=0.001, rho=0.9, rho2=0.999, momentum=0.001)
-beta = SGD(M, n_epochs, scheduler, grad_func)
+beta = SGD(M, n_epochs, scheduler, grad_func, lmb)
 print("beta from Adam with SGD and mom.")
 print(beta)
 y_adam_SGD_mom = beta[0] + beta[1]*x_test + beta[2]*x_test**2
