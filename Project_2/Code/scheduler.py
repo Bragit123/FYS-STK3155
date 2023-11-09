@@ -117,9 +117,10 @@ class RMS_prop(Scheduler):
 
 
 class RMS_propMomentum(Scheduler):
-    def __init__(self, eta, rho):
+    def __init__(self, eta, rho, momentum):
         super().__init__(eta)
         self.rho = rho
+        self.momentum = momentum
         self.second = 0.0
         self.change = 0.0
 

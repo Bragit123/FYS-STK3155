@@ -47,6 +47,7 @@ epochs = np.arange(len(scores["train_errors"]))
 plt.plot(epochs, scores["train_errors"])
 plt.show()
 """
+
 ## Making the Franke function. This part is largely copied from the projection description
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
@@ -84,6 +85,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -107,8 +109,6 @@ for i in range(len(etas)):
 
 fig, ax = plt.subplots(figsize = (10, 10))
 sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
 ax.set_title("MSE test")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
@@ -135,6 +135,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -187,6 +188,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -229,7 +231,6 @@ plt.savefig("../Figures/R2,Franke,LRELU.pdf")
 plt.show()
 
 
-
 #Visualising the fit for parameters we found to give a small MSE
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
@@ -240,6 +241,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target_shape = target.shape
 target = target.reshape((len(target),1))
 

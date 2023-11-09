@@ -25,8 +25,10 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target_shape = target.shape
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
+#RELU
 # Defining the neural network
 n_inputs, n_features = X.shape
 n_hidden_neurons = 50
@@ -41,8 +43,8 @@ epochs = 100
 
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals):
-        dnn = MLPRegressor(hidden_layer_sizes=(n_hidden_neurons), activation='relu',
-                            alpha=lmbd, learning_rate_init=eta, max_iter=epochs,batch_size=5)
+        dnn = MLPRegressor(hidden_layer_sizes=(n_hidden_neurons), activation="relu", solver="adam",
+                            alpha=lmbd, learning_rate_init=eta, max_iter=epochs,batch_size=5, momentum=0.01)
         dnn.fit(X_train, t_train)
         DNN_scikit[i][j] = dnn
         #print("Learning rate  = ", eta)
