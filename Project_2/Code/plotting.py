@@ -31,13 +31,15 @@ def plot(x_list, y_list, labels, title, xlabel, ylabel, filename):
 ## Heatmap
 def heatmap(data, xticks, yticks, title, xlabel, ylabel, filename):
     fig, ax = plt.subplots(figsize = (10, 10))
-    sns.heatmap(data, xticklabels=xticks, yticklabels=yticks, annot=True, ax=ax, cmap="viridis")
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.yticks(fontsize=label_size)
-    ax.xticks(fontsize=label_size)
-    plt.savefig(filename, bbox_inches='tight')
+    sns.heatmap(data, xticklabels=xticks, yticklabels=yticks, annot=True, annot_kws={"fontsize": label_size}, fmt=".2f", ax=ax, cmap="viridis")
+    ax.set_title(title, fontsize=label_size)
+    ax.set_xlabel(xlabel, fontsize=label_size)
+    ax.set_ylabel(ylabel, fontsize=label_size)
+    plt.yticks(fontsize=label_size)
+    plt.xticks(fontsize=label_size)
+    colorbar_ax = ax.figure.axes[-1]
+    colorbar_ax.tick_params(labelsize=label_size)
+    fig.savefig(filename, bbox_inches='tight')
 
 ## Søyleplot
 def barplot(x, y, xlabel, ylabel, title, filename):
