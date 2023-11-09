@@ -46,6 +46,7 @@ def barplot(x, y, xlabel, ylabel, title, filename):
     plt.xlabel(xlabel, fontsize=label_size)
     plt.ylabel(ylabel, fontsize=label_size)
     plt.yticks(fontsize=label_size)
-    plt.xticks(fontsize=label_size)
+    if type(x[0]) == str:
+        plt.xticks(fontsize=label_size, rotation=90)
     plt.bar(x, y)
     plt.savefig(filename, bbox_inches='tight')
