@@ -14,6 +14,7 @@ from copy import copy
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import sklearn
+from plotting import *
 """
 def f(x):
     return 4.*x**2 + 3.*x + 6.
@@ -107,23 +108,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,sigmoid.pdf")
-plt.show()
-
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,sigmoid.pdf")
-plt.show()
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, sigmoid", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,sigmoid.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,sigmoid.pdf")
 
 #Calculating MSE, R2, RELU
 x = np.arange(0, 1, 0.05)
@@ -157,25 +143,9 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,RELU.pdf")
-plt.show()
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,RELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,RELU.pdf")
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,RELU.pdf")
-plt.show()
 
 
 #Calculating MSE, R2, LRELU
@@ -210,25 +180,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,LRELU.pdf")
-plt.show()
-
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,LRELU.pdf")
-plt.show()
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, LRELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/MSE,Franke,LRELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, LRELU", xlabel="$\eta$", ylabel="$\lambda$", filename="../Figures/R2,Franke,LRELU.pdf")
 
 
 #Visualising the fit for parameters we found to give a small MSE
