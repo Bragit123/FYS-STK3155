@@ -299,7 +299,7 @@ Names = [""]*16
 k = 0 #Counter
 
 grad_func= grad(CostRidge)
-lmb = 0.01
+lmb = 0.1
 #Constant learning schedule
 
 scheduler = Constant(eta=0.001)

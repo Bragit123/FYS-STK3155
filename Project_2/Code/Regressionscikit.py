@@ -6,7 +6,8 @@ import seaborn as sns
 from sklearn.metrics import mean_squared_error, r2_score
 import sklearn
 from sklearn.model_selection import train_test_split
-
+from plotting import *
+seed = np.random.seed(200)
 
 def FrankeFunction(x, y):
     """ Calculates the Franke function at a point (x,y) """
@@ -35,8 +36,8 @@ n_hidden_neurons = 50
 n_categories = 1
 n_features = 2
 
-eta_vals = np.logspace(-3, 0, 4)
-lmbd_vals = np.logspace(-4, 0, 5)
+eta_vals = np.logspace(-4, -1, 4)
+lmbd_vals = np.logspace(-6, -1, 6)
 # store models for later use
 DNN_scikit = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
 epochs = 100
@@ -62,8 +63,8 @@ for i in range(len(eta_vals)):
         MSE[i,j] = sklearn.metrics.mean_squared_error(t_test,test_pred)
         R2[i,j] = sklearn.metrics.r2_score(t_test, test_pred)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSErelu.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2relu.pdf")
+heatmap(MSE, xticks=lmbd_vals, yticks=eta_vals, title="MSE test with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSErelu.pdf")
+heatmap(R2, xticks=lmbd_vals, yticks=eta_vals, title="R2-score with scikit, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2relu.pdf")
 
 #sigmoid
 # Defining the neural network
@@ -72,8 +73,8 @@ n_hidden_neurons = 50
 n_categories = 1
 n_features = 2
 
-eta_vals = np.logspace(-3, 0, 4)
-lmbd_vals = np.logspace(-4, 0, 5)
+eta_vals = np.logspace(-4, -1, 4)
+lmbd_vals = np.logspace(-6, -1, 6)
 # store models for later use
 DNN_scikit = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
 epochs = 100
@@ -99,5 +100,5 @@ for i in range(len(eta_vals)):
         MSE[i,j] = sklearn.metrics.mean_squared_error(t_test,test_pred)
         R2[i,j] = sklearn.metrics.r2_score(t_test, test_pred)
 
-heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSEsigmoid.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2sigmoid.pdf")
+heatmap(MSE, xticks=lmbd_vals, yticks=eta_vals, title="MSE test with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitMSEsigmoid.pdf")
+heatmap(R2, xticks=lmbd_vals, yticks=eta_vals, title="R2-score with scikit, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/ScikitR2sigmoid.pdf")

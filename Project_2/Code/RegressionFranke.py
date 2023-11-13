@@ -48,7 +48,7 @@ epochs = np.arange(len(scores["train_errors"]))
 plt.plot(epochs, scores["train_errors"])
 plt.show()
 """
-
+seed = np.random.seed(200)
 ## Making the Franke function. This part is largely copied from the projection description
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
@@ -75,7 +75,7 @@ ax.zaxis.set_major_locator(LinearLocator(10))
 ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.savefig("../Figures/franke_function.pdf")
-
+"""
 #Calculating MSE, R2, Sigmoid
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
@@ -94,8 +94,8 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
+etas = np.logspace(-4,-1,4)
+lmbds = np.logspace(-6,-1,6)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -109,7 +109,7 @@ for i in range(len(etas)):
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
 heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,sigmoid.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\lamdba$", ylabel="$\eta$", filename="../Figures/R2,Franke,sigmoid.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,sigmoid.pdf")
 
 #Calculating MSE, R2, RELU
 x = np.arange(0, 1, 0.05)
@@ -129,8 +129,6 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -144,7 +142,7 @@ for i in range(len(etas)):
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
 heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,RELU.pdf")
-heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\lamba$", ylabel="$\eta$", filename="../Figures/R2,Franke,RELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,RELU.pdf")
 
 
 
@@ -166,8 +164,6 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -182,8 +178,7 @@ for i in range(len(etas)):
 
 heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,LRELU.pdf")
 heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,LRELU.pdf")
-
-
+"""
 #Visualising the fit for parameters we found to give a small MSE
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
@@ -200,7 +195,7 @@ target = target.reshape((len(target),1))
 
 rho = 0.9
 rho2 = 0.999
-eta=0.1
+eta = 0.1
 scheduler = AdamMomentum(eta, rho, rho2, momentum = 0.01)
 dim = (2, 50, 1)
 
