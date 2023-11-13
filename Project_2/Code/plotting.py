@@ -27,6 +27,7 @@ def plot(x_list, y_list, labels, title, xlabel, ylabel, filename):
 
     plt.legend(fontsize=label_size)
     plt.savefig(filename, bbox_inches='tight')
+    plt.close()
 
 ## Heatmap
 def heatmap(data, xticks, yticks, title, xlabel, ylabel, filename):
@@ -40,6 +41,7 @@ def heatmap(data, xticks, yticks, title, xlabel, ylabel, filename):
     colorbar_ax = ax.figure.axes[-1]
     colorbar_ax.tick_params(labelsize=label_size)
     fig.savefig(filename, bbox_inches='tight')
+    plt.close()
 
 ## Søyleplot
 def barplot(x, y, xlabel, ylabel, title, filename):
@@ -52,3 +54,4 @@ def barplot(x, y, xlabel, ylabel, title, filename):
         plt.xticks(fontsize=label_size, rotation=90)
     plt.bar(x, y)
     plt.savefig(filename, bbox_inches='tight')
+    plt.close()
