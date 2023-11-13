@@ -14,6 +14,7 @@ from copy import copy
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import sklearn
+from plotting import *
 """
 def f(x):
     return 4.*x**2 + 3.*x + 6.
@@ -47,6 +48,7 @@ epochs = np.arange(len(scores["train_errors"]))
 plt.plot(epochs, scores["train_errors"])
 plt.show()
 """
+seed = np.random.seed(200)
 ## Making the Franke function. This part is largely copied from the projection description
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
@@ -73,7 +75,7 @@ ax.zaxis.set_major_locator(LinearLocator(10))
 ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.savefig("../Figures/franke_function.pdf")
-
+"""
 #Calculating MSE, R2, Sigmoid
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
@@ -84,6 +86,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -91,8 +94,8 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
+etas = np.logspace(-4,-1,4)
+lmbds = np.logspace(-6,-1,6)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -105,25 +108,8 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,sigmoid.pdf")
-plt.show()
-
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,sigmoid.pdf")
-plt.show()
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,sigmoid.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, sigmoid", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,sigmoid.pdf")
 
 #Calculating MSE, R2, RELU
 x = np.arange(0, 1, 0.05)
@@ -135,6 +121,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -142,8 +129,6 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -156,25 +141,9 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,RELU.pdf")
-plt.show()
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,RELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, RELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,RELU.pdf")
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,RELU.pdf")
-plt.show()
 
 
 #Calculating MSE, R2, LRELU
@@ -187,6 +156,7 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target = target.reshape((len(target),1))
 X_train, X_test, t_train, t_test = train_test_split(X, target, test_size=0.2)
 #Adam parameters
@@ -194,8 +164,6 @@ rho = 0.9
 rho2 = 0.999
 momentum = 0.01
 dim = (2, 50, 1)
-etas = np.logspace(-3,0,4)
-lmbds = np.logspace(-4,0,5)
 MSE = np.zeros((len(etas),len(lmbds)))
 R2 = np.zeros((len(etas),len(lmbds)))
 for i in range(len(etas)):
@@ -208,28 +176,9 @@ for i in range(len(etas)):
         output = Neural.predict(X_test)
         R2[i,j] = sklearn.metrics.r2_score(t_test, output)
 
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(MSE, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("MSE test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/MSE,Franke,LRELU.pdf")
-plt.show()
-
-fig, ax = plt.subplots(figsize = (10, 10))
-sns.heatmap(R2, xticklabels=lmbds, yticklabels=etas, annot=True, ax=ax, cmap="viridis")
-#ax.set_yticks(etas)
-#ax.set_xticks(lmbds)
-ax.set_title("R2-score test")
-ax.set_ylabel("$\eta$")
-ax.set_xlabel("$\lambda$")
-plt.savefig("../Figures/R2,Franke,LRELU.pdf")
-plt.show()
-
-
-
+heatmap(MSE, xticks=lmbds, yticks=etas, title="MSE test, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/MSE,Franke,LRELU.pdf")
+heatmap(R2, xticks=lmbds, yticks=etas, title="R2-score, LRELU", xlabel="$\lambda$", ylabel="$\eta$", filename="../Figures/R2,Franke,LRELU.pdf")
+"""
 #Visualising the fit for parameters we found to give a small MSE
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
@@ -240,12 +189,13 @@ x = x.flatten()
 y = y.flatten()
 X = np.array([x.flatten(),y.flatten()]).T
 target = FrankeFunction(x.flatten(),y.flatten())
+target += 0.1*np.random.normal(0, 1, target.shape) #Adding noise
 target_shape = target.shape
 target = target.reshape((len(target),1))
 
 rho = 0.9
 rho2 = 0.999
-eta=0.1
+eta = 0.1
 scheduler = AdamMomentum(eta, rho, rho2, momentum = 0.01)
 dim = (2, 50, 1)
 
