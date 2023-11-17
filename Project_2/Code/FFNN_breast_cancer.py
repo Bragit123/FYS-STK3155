@@ -82,10 +82,10 @@ for d in range(len(dims)):
         act_txt = hidden_act.__name__
 
         # Create heatmap plots for the accuracies
-        title = f"Training accuracy on breast cancer dataset. Hidden activation function: {act_txt}. Dimension {dim}."
+        title = f"Hidden activation function: {act_txt}. Dimension {dim}."
         filename = f"../Figures/Breast_cancer/train_accs_{act_txt}_{node_txt}.pdf"
         plotting.heatmap(data=train_accs, xticks=lams, yticks=etas, title=title, xlabel="$\\lambda$", ylabel="$\\eta$", filename=filename)
 
-        title = f"Validation accuracy on breast cancer dataset. Hidden activation function: {act_txt}. Dimension {dim}."
+        title = f"Hidden activation function: {act_txt}. Dimension {dim}."
         filename = f"../Figures/Breast_cancer/val_accs_{act_txt}_{node_txt}.pdf"
         plotting.heatmap(data=val_accs, xticks=lams, yticks=etas, title=title, xlabel="$\\lambda$", ylabel="$\\eta$", filename=filename)
