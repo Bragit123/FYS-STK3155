@@ -7,6 +7,6 @@ The program "NN.py" contains the class "FFNN", which is the neural network. This
 
 "plotting.py" contains functions for plotting regular plots, heatmap plots and barplots, which we use in our report. "funcs.py" contains various cost and activation functions.
 
-In "SGD" we run the gradient descent code from "scheduler", using all the different learning algorithms, and plotting R$^2$-score and MSE (which we don't use). "RegressionFranke" uses the neural network code to fit the twodimensional Franke Function. "FFNN_breast_center" uses the neural network code on Wisconsin breast cancer data set to train and then predict based on the input data whether a tumor is benign or malignant. 
+In "SGD" we run the gradient descent code from "scheduler", using all the different learning algorithms, and plotting R$^2$-score and MSE (which we don't use). "RegressionFranke" uses the neural network code to fit the twodimensional Franke Function. "FFNN_breast_center"  uses the neural network code on the Wisconsin breast cancer data set (https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) to train and then predict based on the input data whether a tumor is benign or malignant. "logisticRegression.py" consists the code for logistic regression on the breast cancer data.
 
 To run any program you simply make your way to the right directory after cloning the repository, and write "python3 "programname"" in your terminal.
