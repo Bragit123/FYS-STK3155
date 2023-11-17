@@ -4,7 +4,8 @@ This code is copied from the lecture notes by Morten Hjort-Jensen at the
 following link:
 https://compphysics.github.io/MachineLearning/doc/LectureNotes/_build/html/exercisesweek43.html#learning-rate-methods
 The only change made to these functions are that we use jax instead of autograd
-for automatic differentiation.
+for automatic differentiation. We have also added two new functions,
+RMS_propMomentum and AdamMomentum.
 """
 
 import jax.numpy as jnp
