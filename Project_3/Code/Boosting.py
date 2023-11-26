@@ -12,6 +12,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error
+from sklearn.tree import export_graphviz
+from pydot import graph_from_dot_data
+import pandas as pd
+import os
 
 import scikitplot as skplt
 
@@ -49,12 +53,16 @@ class Boosting: #mangler å brukte y_pred på test dataenls
 
         accuracy = np.mean(y_pred == self.y_test)
 
+        y_probas = ada_clf.predict_proba(self.X_test)
 
-        print(f"Accuracy:{np.mean(y_pred == self.y_test)}")
-        print(f"self.y_test. {len(self.y_test)}")
-        print(f"{len(y_pred)}")
 
-        return y_pred, accuracy
+        #print(f"Accuracy:{np.mean(y_pred == self.y_test)}")
+        #print(f"self.y_test. {len(self.y_test)}")
+        #print(f"{len(y_pred)}")
+
+        #print(y_probas)
+
+        return y_pred,y_probas, accuracy
     
 
     def Gradient_Boosting(self): #change to classification
@@ -70,9 +78,11 @@ class Boosting: #mangler å brukte y_pred på test dataenls
 
         print(f"y_pred: {y_pred}")
 
-        print(f"accuracy:{accuracy} ")
+        #print(f"accuracy:{accuracy} ")
+
+        y_probas = model.predict_proba(self.X_test)
         
-        return y_pred, accuracy
+        return y_pred,y_probas, accuracy
     
 
     def XGBoost(self,maxdegree):
@@ -81,23 +91,27 @@ class Boosting: #mangler å brukte y_pred på test dataenls
         bias = np.zeros(maxdegree)
         variance = np.zeros(maxdegree)
         polydegree = np.zeros(maxdegree)
-        predictions = np.zeros(maxdegree)
+        predictions = list()
         accuracy = np.zeros(maxdegree)
 
         for degree in range(maxdegree):
             
             #model =  xgb.XGBRegressor(objective ='reg:squarederror', colsaobjective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.1,max_depth = self.max_depth, alpha = 10, n_estimators = 200)
-            model =  xgb.XGBClassifier(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.1,max_depth = self.max_depth, alpha = 10, n_estimators = 200)
+            model =  xgb.XGBClassifier(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.1,
+                                       max_depth = self.max_depth, alpha = 10, n_estimators = 200)
 
             #should max depth be equal to degree ? 
 
             model.fit(self.X_train_scaled,self.y_train)
 
-            #get no changes in accuracy higher degrees 
+            #get no changes in accuracy for higher degrees 
 
             y_pred = model.predict(self.X_test_scaled)
+            #print(y_pred)
 
-            #predictions[degree] = y_pred
+            y_probas = model.predict_proba(self.X_test)
+
+            predictions.append(y_pred)
 
             accuracy[degree] = np.mean(y_pred == self.y_test)
 
@@ -120,13 +134,68 @@ class Boosting: #mangler å brukte y_pred på test dataenls
         print(accuracy)
         print(f"Higest accuray:{np.max(accuracy)} for Degree:{np.argmax(accuracy)}")
 
-        return predictions
+        return predictions, y_probas
+    
+    def cumulative_gain(self):
+
+        #y_probas = self.Gradient_Boosting()[0]
+        y_probas = self.AdaBoost()[1]
+        skplt.metrics.plot_cumulative_gain(self.y_test, y_probas, title='Cumulative Gains Curve AdaBoost')
+        y_probas = self.Gradient_Boosting()[1]
+        skplt.metrics.plot_cumulative_gain(self.y_test, y_probas, title='Cumulative Gains Curve Gradient Boost')
+        y_probas = self.XGBoost(6)[1]
+        skplt.metrics.plot_cumulative_gain(self.y_test, y_probas, title='Cumulative Gains Curve XGBoost')
+        plt.show()
+
+    def ROC(self):
+
+        skplt.metrics.plot_roc(self.y_test, self.AdaBoost()[1], title='ROC Curves AdaBoost')
+        skplt.metrics.plot_roc(self.y_test, self.Gradient_Boosting()[1], title='ROC Curves Gradient Boost')
+        skplt.metrics.plot_roc(self.y_test, self.XGBoost(6)[1], title='ROC Curves XGBoost')
+
+        plt.show()
+
+
+    def Descision_Tree(self):
+
+        dataframe = pd.DataFrame(self.data.data, columns=self.data.feature_names)
+
+        print(dataframe)
+
+        y = pd.Categorical.from_codes(self.data.target, self.data.target_names)
+        y = pd.get_dummies(y)
+
+        print(y)
+
+        X_train, X_test, y_train, y_test = train_test_split(dataframe, y, random_state=1)
+
+        tree_model = DecisionTreeClassifier(max_depth=self.max_depth)
+        tree_model.fit(X_train, y_train)
+
+        export_graphviz(
+            tree_model,
+            out_file = "/Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.dot",
+            feature_names = self.data.feature_names,
+            class_names = self.data.target_names,
+            rounded = True,
+            filled = True
+        )
+
+        cmd = 'dot -Tpng /Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.dot -o /Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.png'
+        os.system(cmd)
+
+
                         
 
 
 instance = Boosting(data,3,100,1)
 
-print(instance.XGBoost(6))
+
+#print(instance.AdaBoost()[1])
+#print(instance.cumulative_gain())
+#print(instance.XGBoost(6))
+#instance.ROC()
+instance.Descision_Tree()
 
 
 
@@ -137,7 +206,7 @@ skplt.metrics.plot_confusion_matrix(y_test, y_pred, normalize=True)
 plt.show()
 y_probas = ada_clf.predict_proba(X_test)
 
-skplt.metrics.plot_roc(y_test, y_probas)
+c
 plt.show()
 
 skplt.metrics.plot_cumulative_gain(y_test, y_probas)
