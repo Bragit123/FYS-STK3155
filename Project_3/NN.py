@@ -1,4 +1,3 @@
-
 """
 This code is largely inspired by the lecture notes by Morten Hjort-Jensen at the
 following link:
@@ -44,7 +43,10 @@ class FFNN:
         if self.classification == True:
             return np.where(res > 0.5, 1, 0)
         elif self.categorization == True:
-            return np.argmax(res, axis=1)
+            ind = np.argmax(res, axis=1, keepdims=True)
+            res = np.zeros(res.shape)
+            np.put_along_axis(res, ind, 1, axis=1)
+            return res
         else:
             return res
 
@@ -78,7 +80,6 @@ class FFNN:
         grad_cost = derivate(cost)
         grad_act_hidden = vmap(vmap(derivate(act_hidden)))
         grad_act_output = vmap(vmap(derivate(act_output)))
-
         for i in range(len(self.weights) - 1, -1, -1):
             # Output layer:
             if i == len(self.weights) - 1:
@@ -182,12 +183,12 @@ class FFNN:
                 if val_set:
                     pred_val = self.predict(X_val)
                     val_errors[e] = cost_func_val(pred_val)
-                    if self.classification == True:
-                        val_accuracy = np.mean(pred_val == t_val)
+                    if self.classification == True or self.categorization == True:
+                        val_accuracy = np.mean(np.all(pred_train == t, axis=1))
                         val_accs[e] = val_accuracy
 
-                if self.classification == True:
-                    train_accuracy = np.mean(pred_train == t)
+                if self.classification == True or self.categorization == True:
+                    train_accuracy = np.mean(np.all(pred_train == t, axis=1))
                     train_accs[e] = train_accuracy
 
                 progression = e / epochs
@@ -205,7 +206,7 @@ class FFNN:
         if val_set:
             scores["val_errors"] = val_errors
 
-        if self.classification:
+        if self.classification or self.categorization:
             scores["train_accs"] = train_accs
 
             if val_set:

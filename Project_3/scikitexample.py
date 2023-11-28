@@ -9,8 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 # ensure the same random numbers appear every time
 np.random.seed(0)
-a = np.array([[1,2,3],[4,5,6],[]])
-print()
+
 
 # download MNIST dataset
 digits = datasets.load_digits()
