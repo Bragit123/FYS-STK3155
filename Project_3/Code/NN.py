@@ -1,13 +1,10 @@
-
 """
 This code is largely inspired by the lecture notes by Morten Hjort-Jensen at the
 following link:
 https://compphysics.github.io/MachineLearning/doc/LectureNotes/_build/html/exercisesweek43.html#the-neural-network
 """
 import numpy as np
-import jax
-from jax import grad, vmap
-import jax.numpy as jnp
+from jax import jacobian, vmap
 from sklearn.utils import resample
 from copy import copy
 from funcs import derivate
@@ -46,12 +43,9 @@ class FFNN:
         if self.classification == True:
             return np.where(res > 0.5, 1, 0)
         elif self.categorization == True:
-            ind = jnp.argmax(X, axis=1)
-            res = jnp.zeros_like(X)
-            res = res.at[jnp.arange(X.shape[0]), ind].set(1)
-            #ind = np.argmax(res, axis=1, keepdims=True)
-            #res = np.zeros(res.shape)
-            #np.put_along_axis(res, ind, 1, axis=1)
+            ind = np.argmax(res, axis=1, keepdims=True)
+            res = np.zeros(res.shape)
+            np.put_along_axis(res, ind, 1, axis=1)
             return res
         else:
             return res
@@ -85,28 +79,15 @@ class FFNN:
         act_output = self.output_act
         grad_cost = derivate(cost)
         grad_act_hidden = vmap(vmap(derivate(act_hidden)))
-        if self.categorization:
-            # Jacobian of softmax for a single row
-            jacobian_softmax_single = jax.jacfwd(act_output)
-            # Vectorized Jacobian using vmap
-            grad_act_output = vmap(jacobian_softmax_single)
-        else:
-            grad_act_output = vmap(vmap(derivate(act_output)))
-
+        grad_act_output = vmap(vmap(derivate(act_output)))
 
         for i in range(len(self.weights) - 1, -1, -1):
             # Output layer:
             if i == len(self.weights) - 1:
-                if self.categorization:
-                    #print(self.z_matrices[i+1].shape)
-                    dact = grad_act_output(self.z_matrices[i+1]).T
-                    dcost = grad_cost(self.a_matrices[i+1])
-                    delta_matrix = dact * dcost
-                else:
-                    dact = grad_act_output(self.z_matrices[i+1])
-                    dact = jnp.mean(dact, axis=2)
-                    dcost = grad_cost(self.a_matrices[i+1])
-                    delta_matrix = dact * dcost
+                #print(self.z_matrices[i+1].shape)
+                dact = grad_act_output(self.z_matrices[i+1])
+                dcost = grad_cost(self.a_matrices[i+1])
+                delta_matrix = dact * dcost
 
             # Hidden layers:
             else:
