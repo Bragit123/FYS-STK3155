@@ -7,7 +7,7 @@ import numpy as np
 from jax import jacobian, vmap
 from sklearn.utils import resample
 from copy import copy
-from funcs import derivate, softmax
+from funcs import derivate
 
 class FFNN:
     def __init__(self, dimensions, hidden_act, output_act, cost_func, seed=100, classification = False, categorization = False):
@@ -68,9 +68,6 @@ class FFNN:
             else:
                 a = self.hidden_act(z)
 
-            if self.categorization:
-                a = softmax(a)
-
             self.z_matrices.append(z)
             self.a_matrices.append(a)
 
@@ -83,11 +80,9 @@ class FFNN:
         grad_cost = derivate(cost)
         grad_act_hidden = vmap(vmap(derivate(act_hidden)))
         grad_act_output = vmap(vmap(derivate(act_output)))
-
         for i in range(len(self.weights) - 1, -1, -1):
             # Output layer:
             if i == len(self.weights) - 1:
-                #print(self.z_matrices[i+1].shape)
                 dact = grad_act_output(self.z_matrices[i+1])
                 dcost = grad_cost(self.a_matrices[i+1])
                 delta_matrix = dact * dcost

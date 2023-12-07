@@ -28,14 +28,14 @@ def CostLogReg(target):
 
     return func
 
-
+"""
 def CostCrossEntropy(target):
 
     def func(X):
         return -(1.0 / target.size) * jnp.sum(target * jnp.log(X + 10e-10))
 
     return func
-
+"""
 def identity(X):
     return X
 
@@ -48,9 +48,9 @@ def sigmoid(X):
 
 
 def softmax(X):
-    X = X - jnp.max(X)#, axis=-1, keepdims=True)
+    X = X - jnp.max(X, axis=-1, keepdims=True)
     delta = 10e-10
-    return jnp.exp(X) / (jnp.sum(jnp.exp(X)))#, axis=-1, keepdims=True) + delta)
+    return jnp.exp(X) / (jnp.sum(jnp.exp(X), axis=-1, keepdims=True) + delta)
 
 
 def RELU(X):
