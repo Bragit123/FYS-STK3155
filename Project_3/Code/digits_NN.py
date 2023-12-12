@@ -27,12 +27,12 @@ X_test = minmax_scale(X_test, feature_range=(0, 1), axis=0) # Scale to avoid sig
 
 ## Neural network
 dim = (n_features, 100, 10)
-hidden_act = sigmoid ; output_act = identity
+hidden_act = sigmoid ; output_act = sigmoid
 cost_func = CostLogReg
 eta = 0.01 ; rho = 0.9 ; rho2 = 0.999 ; momentum = 0.01
 scheduler = AdamMomentum(eta, rho, rho2, momentum)
 
-n_epochs = 100
+n_epochs = 10
 n_batches = 1
 neural = NN.FFNN(dim, hidden_act, output_act, cost_func, categorization=True)
 scores = neural.train(X_train, t_train, scheduler, epochs=n_epochs, batches=n_batches, X_val=X_test, t_val=t_test)
@@ -43,7 +43,3 @@ val_accs = scores["val_accs"]
 plt.figure()
 plt.plot(epochs, val_accs)
 plt.savefig("accs.pdf")
-
-print(val_accs)
-print(np.argmin(val_accs))
-print(np.min(val_accs))
