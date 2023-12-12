@@ -1,49 +1,41 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.datasets import load_digits
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
 from sklearn.preprocessing import minmax_scale, LabelBinarizer
-from sklearn.model_selection import train_test_split
-import NN
-from scheduler import AdamMomentum
-from funcs import sigmoid, RELU, identity, CostLogReg, softmax, LRELU
-
-from tensorflow.keras import datasets
+import matplotlib.pyplot as plt
 
 (X_train, t_train), (X_test, t_test) = datasets.mnist.load_data()
 
-t_train = LabelBinarizer().fit_transform(t_train)
-t_test = LabelBinarizer().fit_transform(t_test)
+X_train, X_test = X_train / 255.0, X_test / 255.0
 
-## Reshape X to 1D
-n_train, n_rows, n_cols = np.shape(X_train)
-n_test, n_rows, n_cols = np.shape(X_test)
-n_features = n_rows*n_cols
-X_train = np.reshape(X_train, (n_train, n_features))
-X_test = np.reshape(X_test, (n_test, n_features))
+print(np.shape(X_train))
 
-X_train = minmax_scale(X_train, feature_range=(0, 1), axis=0) # Scale to avoid sigmoid problems
-X_test = minmax_scale(X_test, feature_range=(0, 1), axis=0) # Scale to avoid sigmoid problems
+model = models.Sequential()
+model.add(layers.Conv2D(28, (3, 3), activation="sigmoid", input_shape=(28, 28, 1)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(56, (3, 3), activation="sigmoid"))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(56, (3, 3), activation="sigmoid"))
 
-## Neural network
-dim = (n_features, 100, 10)
-hidden_act = sigmoid ; output_act = identity
-cost_func = CostLogReg
-eta = 0.01 ; rho = 0.9 ; rho2 = 0.999 ; momentum = 0.01
-scheduler = AdamMomentum(eta, rho, rho2, momentum)
+model.add(layers.Flatten())
+model.add(layers.Dense(56, activation='sigmoid'))
+model.add(layers.Dense(10))
 
-n_epochs = 100
-n_batches = 1
-neural = NN.FFNN(dim, hidden_act, output_act, cost_func, categorization=True)
-scores = neural.train(X_train, t_train, scheduler, epochs=n_epochs, batches=n_batches, X_val=X_test, t_val=t_test)
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
-epochs = np.arange(n_epochs)
-val_accs = scores["val_accs"]
+history = model.fit(X_train, t_train, epochs=10, 
+                    validation_data=(X_test, t_test))
 
-plt.figure()
-plt.plot(epochs, val_accs)
-plt.savefig("accs.pdf")
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
+plt.savefig("cnn_accs.pdf")
 
-print(val_accs)
-print(np.argmin(val_accs))
-print(np.min(val_accs))
+test_loss, test_acc = model.evaluate(X_test, t_test, verbose=2)
+print(test_acc)
