@@ -32,7 +32,7 @@ cost_func = CostLogReg
 eta = 0.01 ; rho = 0.9 ; rho2 = 0.999 ; momentum = 0.01
 scheduler = AdamMomentum(eta, rho, rho2, momentum)
 
-n_epochs = 100
+n_epochs = 10
 n_batches = 1
 neural = NN.FFNN(dim, hidden_act, output_act, cost_func, categorization=True)
 scores = neural.train(X_train, t_train, scheduler, epochs=n_epochs, batches=n_batches, X_val=X_test, t_val=t_test)
