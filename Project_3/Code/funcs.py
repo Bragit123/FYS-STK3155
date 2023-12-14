@@ -48,9 +48,9 @@ def sigmoid(X):
 
 
 def softmax(X):
-    X = X - jnp.max(X)#, axis=-1, keepdims=True)
+    X = X - jnp.max(X, axis=-1, keepdims=True)
     delta = 10e-10
-    return jnp.exp(X) / (jnp.sum(jnp.exp(X)))#, axis=-1, keepdims=True) + delta)
+    return jnp.exp(X) / (jnp.sum(jnp.exp(X), axis=-1, keepdims=True) + delta)
 
 
 def RELU(X):

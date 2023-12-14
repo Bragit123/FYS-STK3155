@@ -1,64 +1,41 @@
+
 import numpy as np
-from jax import jacobian, vmap, grad
-import jax as jnp
-import matplotlib.pyplot as plt
-from sklearn.datasets import load_digits
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
 from sklearn.preprocessing import minmax_scale, LabelBinarizer
-from sklearn.model_selection import train_test_split
-import NN
-from scheduler import AdamMomentum
-from funcs import sigmoid, RELU, identity, CostLogReg, softmax, LRELU
+import matplotlib.pyplot as plt
 
-from tensorflow.keras import datasets
+(X_train, t_train), (X_test, t_test) = datasets.mnist.load_data()
 
+X_train, X_test = X_train / 255.0, X_test / 255.0
 
+print(np.shape(X_train))
 
-# Jacobian of softmax for a single row
-jacobian_softmax_single = jax.jacfwd(softmax)
+model = models.Sequential()
+model.add(layers.Conv2D(28, (3, 3), activation="sigmoid", input_shape=(28, 28, 1)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(56, (3, 3), activation="sigmoid"))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(56, (3, 3), activation="sigmoid"))
 
-# Vectorized Jacobian using vmap
-jacobian_act_output = vmap(jacobian_softmax_single)
+model.add(layers.Flatten())
+model.add(layers.Dense(56, activation='sigmoid'))
+model.add(layers.Dense(10))
 
-# Example usage with a matrix
-input_matrix = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
-# Apply vmap to calculate Jacobian for each row
-jacobian_matrix = jacobian_act_output(input_matrix)
+history = model.fit(X_train, t_train, epochs=10, 
+                    validation_data=(X_test, t_test))
 
-# Take the mean along the third axis to obtain a single 3x3 Jacobian matrix
-mean_jacobian_matrix = jnp.mean(jacobian_matrix, axis=2)
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
+plt.savefig("cnn_accs.pdf")
 
-print(mean_jacobian_matrix)
-digits = load_digits()
-
-X = digits.images
-t = digits.target
-
-
-t = LabelBinarizer().fit_transform(t)
-n_inputs, n_rows, n_cols = np.shape(X)
-n_features = n_rows*n_cols
-X = np.reshape(X, (n_inputs, n_features))
-
-X = minmax_scale(X, feature_range=(0, 1), axis=0) # Scale to avoid sigmoid problems
-
-X_train, X_test, t_train, t_test = train_test_split(X, t, test_size=0.2, random_state=100)
-
-## Neural network
-dim = (n_features, 100, 10)
-hidden_act = sigmoid ; output_act = identity
-cost_func = CostLogReg
-eta = 0.01 ; rho = 0.9 ; rho2 = 0.999 ; momentum = 0.01 ; lmbd = 0.001
-scheduler = AdamMomentum(eta, rho, rho2, momentum)
-batches = 20
-epochs = 100
-
-neural = NN.FFNN(dim, hidden_act, output_act, cost_func, categorization=True)
-scores = neural.train(X_train, t_train, scheduler, epochs=500, X_val=X_test, t_val=t_test)
-
-epochs = np.arange(500)
-val_accs = scores["val_accs"]
-
-plt.figure()
-plt.plot(epochs, val_accs)
-plt.savefig("accs.pdf")
+test_loss, test_acc = model.evaluate(X_test, t_test, verbose=2)
+print(test_acc)
