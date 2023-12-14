@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
@@ -28,7 +27,7 @@ X_train, X_test, t_train, t_test = train_test_split(X, t, test_size=0.2, random_
 
 ## Neural network
 dim = (n_features, 100, 10)
-hidden_act = sigmoid ; output_act = identity
+hidden_act = sigmoid ; output_act = softmax
 cost_func = CostLogReg
 eta = 0.01 ; rho = 0.9 ; rho2 = 0.999 ; momentum = 0.01
 scheduler = AdamMomentum(eta, rho, rho2, momentum)
@@ -42,4 +41,3 @@ val_accs = scores["val_accs"]
 plt.figure()
 plt.plot(epochs, val_accs)
 plt.savefig("accs.pdf")
-

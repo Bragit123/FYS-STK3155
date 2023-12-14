@@ -31,6 +31,7 @@ def plot(x_list, y_list, labels, title, xlabel, ylabel, filename):
 
 ## Heatmap
 def heatmap(data, xticks, yticks, title, xlabel, ylabel, filename):
+    sns.set()
     fig, ax = plt.subplots(figsize = (10, 10))
     sns.heatmap(data, xticklabels=xticks, yticklabels=yticks, annot=True, annot_kws={"fontsize": label_size}, fmt=".2f", ax=ax, cmap="viridis")
     ax.set_title(title, fontsize=label_size)
