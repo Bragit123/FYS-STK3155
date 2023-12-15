@@ -16,11 +16,8 @@ from sklearn.tree import export_graphviz
 from pydot import graph_from_dot_data
 import pandas as pd
 import os
-<<<<<<< HEAD
 import plotting
 
-=======
->>>>>>> 243cc457b122a1cb763b89a38f001e933d5446bd
 import scikitplot as skplt
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
