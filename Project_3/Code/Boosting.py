@@ -26,20 +26,21 @@ from tensorflow.keras import optimizers             #This allows using whichever
 from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
 from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
 
-data = load_breast_cancer()
-digits = datasets.mnist.load_data(path="mnist.npz")
+from tensorflow.keras import datasets
+
 
 class Boosting: #mangler å brukte y_pred på test dataenls
 
-    def __init__(self,digits,max_depth: int,  n_estimators: int,learning_rate: float, algorthim: str = "SAMME.R" ) -> None:
+    def __init__(self, X_train, y_train, X_test, y_test, max_depth: int,  n_estimators: int,learning_rate: float, algorthim: str = "SAMME.R" ) -> None:
 
         self.max_depth = max_depth
-        self.data = data
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.algorthim = algorthim
-        #self.X_train, self.X_test, self.y_train,self.y_test = train_test_split(data.data, data.target, test_size=0.2)
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = digits
 
         self.scaler = StandardScaler()
         self.X_train_scaled = self.scaler.fit_transform(self.X_train)
@@ -167,43 +168,41 @@ class Boosting: #mangler å brukte y_pred på test dataenls
 
     def Descision_Tree(self):
 
-        dataframe = pd.DataFrame(self.data.data, columns=self.data.feature_names)
+        # dataframe = pd.DataFrame(self.data.data, columns=self.data.feature_names)
 
-        print(dataframe)
+        # print(dataframe)
 
-        y = pd.Categorical.from_codes(self.data.target, self.data.target_names)
-        y = pd.get_dummies(y)
+        # y = pd.Categorical.from_codes(self.data.target, self.data.target_names)
+        # y = pd.get_dummies(y)
 
-        print(y)
+        # print(y)
 
-        X_train, X_test, y_train, y_test = train_test_split(dataframe, y, random_state=1)
+        # X_train, X_test, y_train, y_test = train_test_split(dataframe, y,
+        # random_state=1)
+        X_train, X_test, y_train, y_test = self.X_train, self.X_test, self.y_train, self.y_test
 
         tree_model = DecisionTreeClassifier(max_depth=self.max_depth)
         tree_model.fit(X_train, y_train)
-
-        export_graphviz(
-            tree_model,
-            out_file = "/Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.dot",
-            feature_names = self.data.feature_names,
-            class_names = self.data.target_names,
-            rounded = True,
-            filled = True
-        )
-
-        cmd = 'dot -Tpng /Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.dot -o /Users/erlingnupen/documents/FYS-STK3155/Project_3/Code/cancer.png'
-        os.system(cmd)
 
 
                         
 
 
-instance = Boosting(data,3,100,1)
+(X_train, y_train), (X_test, y_test) = datasets.mnist.load_data()
+
+n_train, n_rows, n_cols = np.shape(X_train)
+n_test, n_rows, n_cols = np.shape(X_test)
+n_features = n_rows*n_cols
+X_train = np.reshape(X_train, (n_train, n_features))
+X_test = np.reshape(X_test, (n_test, n_features))
+
+instance = Boosting(X_train, y_train, X_test, y_test, 3, 100, 1)
 
 
-#print(instance.AdaBoost()[1])
-#print(instance.cumulative_gain())
-#print(instance.XGBoost(6))
-#instance.ROC()
+print(instance.AdaBoost()[1])
+print(instance.cumulative_gain())
+print(instance.XGBoost(6))
+instance.ROC()
 instance.Descision_Tree()
 
 
