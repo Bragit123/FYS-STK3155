@@ -16,9 +16,20 @@ from sklearn.tree import export_graphviz
 from pydot import graph_from_dot_data
 import pandas as pd
 import os
+<<<<<<< HEAD
 import plotting
 
+=======
+>>>>>>> 243cc457b122a1cb763b89a38f001e933d5446bd
 import scikitplot as skplt
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
+from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
+from tensorflow.keras import optimizers             #This allows using whichever optimiser we want (sgd,adam,RMSprop)
+from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
+from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
 
 from tensorflow.keras import datasets
 
