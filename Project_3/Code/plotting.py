@@ -54,8 +54,7 @@ def barplot(x, y, xlabel, ylabel, title, filename):
     if type(x[0]) == str:
         plt.xticks(fontsize=label_size, rotation=90)
     plt.bar(x, y, label=x)
-    indices = np.arange(len(x))
     for i in range(len(x)):
-        plt.text(indices[i], y[i], f"{y[i]:.2f}", ha="center", va="bottom")
+        plt.text(x[i], y[i], f"{y[i]:.2f}", ha="center", va="bottom")
     plt.savefig(filename, bbox_inches='tight')
     plt.close()
