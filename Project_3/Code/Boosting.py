@@ -16,21 +16,30 @@ from sklearn.tree import export_graphviz
 from pydot import graph_from_dot_data
 import pandas as pd
 import os
-
 import scikitplot as skplt
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
+from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
+from tensorflow.keras import optimizers             #This allows using whichever optimiser we want (sgd,adam,RMSprop)
+from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
+from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
 
 data = load_breast_cancer()
+digits = datasets.mnist.load_data(path="mnist.npz")
 
 class Boosting: #mangler å brukte y_pred på test dataenls
 
-    def __init__(self,data,max_depth: int,  n_estimators: int,learning_rate: float, algorthim: str = "SAMME.R" ) -> None:
+    def __init__(self,digits,max_depth: int,  n_estimators: int,learning_rate: float, algorthim: str = "SAMME.R" ) -> None:
 
         self.max_depth = max_depth
         self.data = data
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.algorthim = algorthim
-        self.X_train, self.X_test,self.y_train,self.y_test = train_test_split(data.data, data.target, test_size=0.2)
+        #self.X_train, self.X_test, self.y_train,self.y_test = train_test_split(data.data, data.target, test_size=0.2)
+        (self.X_train, self.y_train), (self.X_test, self.y_test) = digits
 
         self.scaler = StandardScaler()
         self.X_train_scaled = self.scaler.fit_transform(self.X_train)
