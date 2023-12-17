@@ -1,38 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.model_selection import  train_test_split 
-from sklearn.datasets import load_breast_cancer
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
-import sklearn.metrics
 from sklearn.preprocessing import minmax_scale
-from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 import xgboost as xgb
-from sklearn.metrics import mean_squared_error
-from sklearn.tree import export_graphviz
-from pydot import graph_from_dot_data
-import pandas as pd
-import os
 import plotting
-
-import scikitplot as skplt
-import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
-from tensorflow.keras.layers import Input
-from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
-from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
-from tensorflow.keras import optimizers             #This allows using whichever optimiser we want (sgd,adam,RMSprop)
-from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
-from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
-
 from tensorflow.keras import datasets
 
 
 class Boosting:
-
     def __init__(self, X_train, y_train, X_test, y_test) -> None:
         self.X_train = X_train
         self.y_train = y_train
@@ -74,19 +50,23 @@ class Boosting:
 
         return accuracy
 
+# Load MNIST dataset
 (X_train, y_train), (X_test, y_test) = datasets.mnist.load_data()
 
+# Retrieve only a subset for faster computation
 n_train = int(0.1*len(y_train))
 n_test = int(0.1*len(y_test))
 X_train = X_train[0:n_train,:,:] ; y_train = y_train[0:n_train]
 X_test = X_test[0:n_test,:,:] ; y_test = y_test[0:n_test]
 
+# Make data one-dimensional
 n_train, n_rows, n_cols = np.shape(X_train)
 n_test, n_rows, n_cols = np.shape(X_test)
 n_features = n_rows*n_cols
 X_train = np.reshape(X_train, (n_train, n_features))
 X_test = np.reshape(X_test, (n_test, n_features))
 
+# Scale data
 X_train = minmax_scale(X_train, feature_range=(0, 1), axis=0)
 X_test = minmax_scale(X_test, feature_range=(0, 1), axis=0)
 
@@ -96,12 +76,15 @@ lam0 = -5; lam1 = 1; n_lam = lam1-lam0+1
 etas = np.logspace(eta0, eta1, n_eta)
 lams = np.logspace(lam0, lam1, n_lam)
 
+# Make arrays for accuracy scores
 val_accs_adaboost = np.zeros(n_eta)
 val_accs_gradboost = np.zeros(n_eta)
 val_accs_xgboost = np.zeros((n_eta, n_lam))
 
 instance = Boosting(X_train, y_train, X_test, y_test)
 
+# Compute model for different eta values (and in the case of XG Boost, different
+# lambda values)
 for i in range(len(etas)):
     print(f"i = {i+1} / {n_eta}")
     instance.eta = etas[i]
