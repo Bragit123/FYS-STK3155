@@ -1,18 +1,12 @@
 #We used Mortens lecture notes, with some tweeks, to see how the cnn of tensorflow could be implemented: https://compphysics.github.io/MachineLearning/doc/LectureNotes/_build/html/week44.html
 
-import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
-import matplotlib.pyplot as plt
+from tensorflow.keras import datasets, layers
 import numpy as np
-from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
-from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
 from tensorflow.keras import optimizers             #This allows using whichever optimiser we want (sgd,adam,RMSprop)
 from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
 from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
 from plotting import * #Various plotting functions, we will use heatmap
-from sklearn.model_selection import train_test_split
-import ipykernel
 
 digits = datasets.mnist.load_data(path="mnist.npz")
 (x_train, y_train), (x_test, y_test) = digits #The data contains a test and a train set
@@ -41,7 +35,7 @@ def create_convolutional_neural_network_keras(input_shape, receptive_field,
     model.add(layers.Dense(n_hidden_neurons, activation=activation, kernel_regularizer=regularizers.l2(lmbd)))
     model.add(layers.Dense(n_categories, activation='softmax', kernel_regularizer=regularizers.l2(lmbd)))
 
-    sgd = tf.keras.optimizers.experimental.SGD(learning_rate=eta)
+    sgd = optimizers.experimental.SGD(learning_rate=eta)
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
     return model
